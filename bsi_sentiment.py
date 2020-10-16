@@ -8,7 +8,7 @@ from sentiment.twitter import search_tweets_tweepy
 # e.g. python bsi_sentiment.py -q "twitter quey" --geo="lat,long,rad" --until="2020-10-16"
 # Sorry guys, I would have done it now, but I'm getting tired lol
 QUERY = 'midterm break'
-UNTIL = '2020-16-10'
+UNTIL = '2020-10-16'
 LANG = 'en'
 MAX_TWEETS = 10
 CSV_PATH = './test.csv'
