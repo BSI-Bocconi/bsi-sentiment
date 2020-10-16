@@ -1,0 +1,2 @@
+GetOldTweets3==0.0.11
+tweepy==3.9.0
