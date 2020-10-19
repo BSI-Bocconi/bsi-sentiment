@@ -16,7 +16,6 @@ CSV_PATH = './test.csv'
 # just a little example
 def test():
     tweets = search_tweets_tweepy(q=QUERY, until=UNTIL, lang=LANG, max_tweets=MAX_TWEETS)
-    tweets.process_text() # TODO: tokenize, normalize, clean,...
     tweets.get_sentiment() # TODO: pretrained or to-be-trained? 
     tweets.to_csv(CSV_PATH)
 
