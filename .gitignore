@@ -142,3 +142,5 @@ cython_debug/
 config/
 # csv files from testing
 *.csv
+# config files
+*.ini
