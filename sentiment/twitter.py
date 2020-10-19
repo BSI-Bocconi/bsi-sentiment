@@ -1,11 +1,14 @@
 import csv
 import datetime
 import json
+import re
 from pathlib import Path
 from typing import Iterable, List, Union
 
 import GetOldTweets3 as got
 import tweepy as tw
+
+from textblob import TextBlob
 
 class NLPTweet:
     """
@@ -32,7 +35,7 @@ class NLPTweet:
     geo (str)
     sentiment -> update description once method implemented
     """
-    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'sentiment']
+    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'polarity', 'subjectivity']
     def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status]=None):
         if isinstance(tweet, got.models.Tweet):
             self._from_got(tweet)
@@ -73,20 +76,16 @@ class NLPTweet:
         tweet.__dict__ = d.copy()
         return tweet
 
-    def processed_text(self):
-        # TODO: tokenize, normalize, clean -> nltk/textblob?
-        # Maybe bool args for tokenize, normalize and clean? 
-        # Add other suggestions here
-        return None
-
-    def get_sentiment(self):
-        # TODO: sentiment analysis on processed text -> nltk/textblob if we want to use pretrained model?
-        # If we go with these, super easy, but we'll have to assess results
+    def get_sentiment(self, method):
+        # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
         # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different 
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
         # model chosen)
         # Add other suggestions here
-        self.sentiment = self.processed_text()
+        processed_text = re.sub(r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text) # remove hashtags | retweets | links | usernames
+        processed_text = TextBlob(processed_text)
+        self.polarity = processed_text.sentiment.polarity
+        self.subjectivity = processed_text.sentiment.subjectivity
 
 
 class NLPTweetList:
