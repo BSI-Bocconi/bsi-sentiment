@@ -30,7 +30,6 @@ class NLPTweet:
     mentions (str)
     hashtags (str)
     geo (str)
-    processed_text -> update description once method implemented
     sentiment -> update description once method implemented
     """
     def __init__(self, tweet: Union[got.models.Tweet, tw.models.Status]):
@@ -51,8 +50,10 @@ class NLPTweet:
             self.geo = tweet.geo
         else:
             raise TypeError(f"tweet must be an instance of either GetOldTweets3.models.Tweet or tweepy.models.Status, got '{type(tweet).__name__}'")
-        self.processed_text = None
         self.sentiment = None
+
+    def __repr__(self):
+        return str(self.__dict__)
 
     def __getitem__(self, k):
         return self.__dict__[k]
@@ -70,38 +71,35 @@ class NLPTweet:
         copy.mentions = self.mentions
         copy.hashtags = self.hashtags
         copy.geo = self.geo
-        copy.processed_text = self.processed_text
         copy.sentiment = self.sentiment
         return copy
 
-    def _tokenize(self):
-        pass
-
-    def _normalize(self):
-        pass
-
-    def _clean(self):
-        pass
-
-    def process_text(self):
+    def processed_text(self):
         # TODO: tokenize, normalize, clean -> nltk/textblob?
         # Maybe bool args for tokenize, normalize and clean? 
         # Add other suggestions here
-        self._tokenize()
-        self._normalize()
-        self._clean()
-        self.processed_text = None
+        return None
 
     def get_sentiment(self):
-        if self.processed_text is None:
-            self.process_text()
         # TODO: sentiment analysis on processed text -> nltk/textblob if we want to use pretrained model?
         # If we go with these, super easy, but we'll have to assess results
         # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different 
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
         # model chosen)
         # Add other suggestions here
-        self.sentiment = None
+        self.sentiment = self.processed_text()
+    
+    @staticmethod
+    def from_dict(d, validate_keys=True):
+        tweet = NLPTweet(got.models.Tweet())
+        for k, v in d.items():
+            if validate_keys:
+                try:
+                    assert k in NLPTweet.DEFAULT_ATTRIBUTES
+                except AssertionError:
+                    raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
+            tweet.__dict__[k] = v
+        return tweet
 
 class NLPTweetList:
     """
@@ -126,13 +124,30 @@ class NLPTweetList:
         for tweet in self.tweets:
             yield tweet
 
-    def process_text(self):
-        for tweet in self:
-            tweet.process_text()
-
     def get_sentiment(self):
         for tweet in self:
             tweet.get_sentiment()
+
+    @staticmethod
+    def from_csv(path: Union[str, Path], delimiter=','):
+        if not isinstance(path, (str, Path)):
+            raise TypeError(f"path must be of type Union[str, Path], got '{type(path).__name__}'")
+        elif isinstance(path, str):
+            path = Path(path)
+        if not path.parent.is_dir():
+            raise FileNotFoundError(f"path '{str(path)}'is not valid")
+        if not path.suffix == '.csv':
+            raise FileNotFoundError(f"path must be pointing at a .csv file, got f'{str(path)}'")
+        with path.open(newline='') as f:
+            reader = csv.reader(f, delimiter=delimiter)
+            columns = next(reader)
+            for col in columns:
+                try:
+                    assert col in NLPTweet.DEFAULT_ATTRIBUTES
+                except AssertionError:
+                    raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
+            tweets = list(map(lambda row: NLPTweet.from_dict(dict(zip(columns, row)), validate_keys=False), reader))
+        return tweets
     
     def to_csv(self, path: Union[str, Path], columns: List[str]=None, delimiter=','):
         if not isinstance(path, (str, Path)):
@@ -143,13 +158,8 @@ class NLPTweetList:
             raise FileNotFoundError(f"path '{str(path)}'is not valid")
         if not path.suffix == '.csv':
             raise FileNotFoundError(f"path must be pointing at a .csv file, got f'{str(path)}'")
-        default_cols = ['id', 'permalink', 'username', 'to', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'text', 'sentiment']
         if columns is None: 
-            columns = default_cols
-        else:
-            for i, col in enumerate(columns):
-                if col not in default_cols:
-                    raise KeyError("NLPTweet doesn't have column {i}, '{col}', among its attributes")
+            columns = list(self[0].__dict__.keys())
         
         with path.open('w', newline='') as f:
             writer = csv.writer(f, delimiter=delimiter)
