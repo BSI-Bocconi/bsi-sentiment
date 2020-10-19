@@ -76,7 +76,7 @@ class NLPTweet:
         tweet.__dict__ = d.copy()
         return tweet
 
-    def get_sentiment(self, method):
+    def get_sentiment(self):
         # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
         # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different 
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
