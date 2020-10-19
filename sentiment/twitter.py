@@ -10,7 +10,7 @@ import tweepy as tw
 class NLPTweet:
     """
     Base class that adds NLP methods to GetOldTweets3.models.Tweet and tweepy.models.Status.
-    This class shouldn't be instantiated on its own, but rather by passing the list of tweets
+    This class shouldn't normally be instantiated on its own, but rather by passing the list of tweets
     returned by got.manager.TweetManager.getTweets to NLPTweetList.
 
     Parameters
@@ -32,10 +32,17 @@ class NLPTweet:
     geo (str)
     sentiment -> update description once method implemented
     """
-    def __init__(self, tweet: Union[got.models.Tweet, tw.models.Status]):
+    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'sentiment']
+    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status]=None):
         if isinstance(tweet, got.models.Tweet):
-            self.__dict__ = tweet.__dict__.copy()
+            self._from_got(tweet)
         elif isinstance(tweet, tw.models.Status):
+            self._from_tweepy(tweet)
+
+    def _from_got(self, tweet):
+        self.__dict__ = tweet.__dict__.copy()
+
+    def _from_tweepy(self, tweet):
             self.id = tweet.id_str
             self.permalink = f"https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}"
             self.username = tweet.user.screen_name
@@ -48,9 +55,6 @@ class NLPTweet:
             self.mentions = ' '.join([user['screen_name'] for user in tweet.entities['user_mentions']])
             self.hashtags = ' '.join(hashtag['text'] for hashtag in tweet.entities['hashtags'])
             self.geo = tweet.geo
-        else:
-            raise TypeError(f"tweet must be an instance of either GetOldTweets3.models.Tweet or tweepy.models.Status, got '{type(tweet).__name__}'")
-        self.sentiment = None
 
     def __repr__(self):
         return str(self.__dict__)
@@ -59,20 +63,15 @@ class NLPTweet:
         return self.__dict__[k]
 
     def __copy__(self):
-        copy = NLPTweet(got.models.Tweet())
-        copy.id = self.id
-        copy.permalink = self.permalink
-        copy.username = self.username
-        copy.to = self.to
-        copy.text = self.text
-        copy.date = self.date
-        copy.retweets = self.retweets
-        copy.favorites = self.favorites
-        copy.mentions = self.mentions
-        copy.hashtags = self.hashtags
-        copy.geo = self.geo
-        copy.sentiment = self.sentiment
+        copy = NLPTweet()
+        copy.__dict__ = self.__dict__.copy()
         return copy
+
+    @staticmethod
+    def from_dict(d):
+        tweet = NLPTweet()
+        tweet.__dict__ = d.copy()
+        return tweet
 
     def processed_text(self):
         # TODO: tokenize, normalize, clean -> nltk/textblob?
@@ -88,18 +87,7 @@ class NLPTweet:
         # model chosen)
         # Add other suggestions here
         self.sentiment = self.processed_text()
-    
-    @staticmethod
-    def from_dict(d, validate_keys=True):
-        tweet = NLPTweet(got.models.Tweet())
-        for k, v in d.items():
-            if validate_keys:
-                try:
-                    assert k in NLPTweet.DEFAULT_ATTRIBUTES
-                except AssertionError:
-                    raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
-            tweet.__dict__[k] = v
-        return tweet
+
 
 class NLPTweetList:
     """
@@ -129,7 +117,7 @@ class NLPTweetList:
             tweet.get_sentiment()
 
     @staticmethod
-    def from_csv(path: Union[str, Path], delimiter=','):
+    def from_csv(path: Union[str, Path], delimiter=',', validate_columns=True):
         if not isinstance(path, (str, Path)):
             raise TypeError(f"path must be of type Union[str, Path], got '{type(path).__name__}'")
         elif isinstance(path, str):
@@ -141,12 +129,13 @@ class NLPTweetList:
         with path.open(newline='') as f:
             reader = csv.reader(f, delimiter=delimiter)
             columns = next(reader)
-            for col in columns:
-                try:
-                    assert col in NLPTweet.DEFAULT_ATTRIBUTES
-                except AssertionError:
-                    raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
-            tweets = list(map(lambda row: NLPTweet.from_dict(dict(zip(columns, row)), validate_keys=False), reader))
+            if validate_columns:
+                for col in columns:
+                    try:
+                        assert col in NLPTweet.DEFAULT_ATTRIBUTES
+                    except AssertionError:
+                        raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
+            tweets = list(map(lambda row: NLPTweet.from_dict(dict(zip(columns, [x if x != '' else None for x in row]))), reader))
         return tweets
     
     def to_csv(self, path: Union[str, Path], columns: List[str]=None, delimiter=','):
