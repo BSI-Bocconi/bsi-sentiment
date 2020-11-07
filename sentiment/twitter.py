@@ -171,6 +171,7 @@ def authenticate_tweepy():
     api = tw.API(auth)
     return api
 
+# TODO: Catch when tweet limit is reached and wait - Stefano
 def search_tweets_tweepy(q,
                          until=None,
                          geocode=None,

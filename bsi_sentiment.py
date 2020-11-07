@@ -17,7 +17,7 @@ parser.add_argument("--result_type", type=str, default="mixed", help="Type of tw
 parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Note that Tweepy limits tweet searches to 300 tweets every 3 hours. Default is 10.")
 args = parser.parse_args()
 
-# TODO: validate arguments + add --download_method 'got' when issue with library is fixed
+# TODO: validate arguments + add --download_method 'got' when issue with library is fixed - Stefano
 if args.command == "configure":
     config = configparser.ConfigParser()
     config['bsi_sentiment'] = {argname: str(args.__dict__[argname]) for argname in ['q', 'until', 'geocode', 'lang', 'result_type', 'max_tweets'] if args.__dict__[argname] is not None}
@@ -33,8 +33,8 @@ else:
     else:
         tweets = search_tweets_tweepy(q=args.q, until=args.until, geocode=args.geocode, lang=args.lang, result_type=args.result_type, max_tweets=args.max_tweets)
     if args.command == 'analyze':
-        tweets.get_sentiment() # TODO: more advanced sentiment analysis (at the moment only textblob)
+        tweets.get_sentiment() # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
     if args.dest is None:
         args.dest = './result.csv'
-    tweets.to_csv(args.dest) # TODO: add options to select columns
+    tweets.to_csv(args.dest) # TODO: add options to select columns - Stefano
  
