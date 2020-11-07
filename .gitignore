@@ -139,8 +139,8 @@ cython_debug/
 
 ### BSI Sentiment Analysis project ###
 # contains credentials.json and config.ini
-config/
+config*
 # csv files from testing
-*.csv
+*.csv*
 # config files
 *.ini
