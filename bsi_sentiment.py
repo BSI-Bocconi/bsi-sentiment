@@ -32,6 +32,8 @@ else:
         tweets = search_tweets_tweepy(**config['bsi_sentiment'])
     else:
         tweets = search_tweets_tweepy(q=args.q, until=args.until, geocode=args.geocode, lang=args.lang, result_type=args.result_type, max_tweets=args.max_tweets)
+    if len(tweets) == 0:
+        raise Exception("The search returned no tweets. Please double check your query.")
     if args.command == 'analyze':
         tweets.get_sentiment() # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
     if args.dest is None:
