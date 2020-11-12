@@ -14,7 +14,7 @@ parser.add_argument("-u", "--until", type=str, help="An upper bound date (not in
 parser.add_argument("-g", "--geocode", type=str, help="Returns only tweets by users within a given radius of the given geolocation. Should be of the form 'latitude,longitude,radius', where radius can be either in 'mi' or 'km'.")
 parser.add_argument("-l", "--lang", type=str, help="Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction.")
 parser.add_argument("--result_type", type=str, default="mixed", help="Type of tweets to retrieve. Can be either 'recent', 'popular' or 'mixed'. Default is 'mixed'.")
-parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Note that Tweepy limits tweet searches to 300 tweets every 3 hours. Default is 10.")
+parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Default is 10. If Twitter API rate limit is reached, the program waits for 15 minutes before trying again.")
 args = parser.parse_args()
 
 # TODO: validate arguments + add --download_method 'got' when issue with library is fixed - Stefano

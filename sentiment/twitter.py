@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 from typing import Iterable, List, Union
+import time
 
 import GetOldTweets3 as got
 import tweepy as tw
@@ -171,7 +172,19 @@ def authenticate_tweepy():
     api = tw.API(auth)
     return api
 
-# TODO: Catch when tweet limit is reached and wait - Stefano
+def limit_handler(cursor):
+    """
+    If Twitter API rate limit is reached, wait for 15 minutes and try again.
+    """
+    while True:
+        try:
+            yield cursor.next()
+        except tw.RateLimitError:
+            print("Reached Tweepy API rate limit. Trying again in 15 minutes. For more information, see https://developer.twitter.com/en/docs/twitter-api/v1/rate-limits.")
+            time.sleep(15 * 60) # wait 15 minutes
+        except StopIteration:
+            break
+
 def search_tweets_tweepy(q,
                          until=None,
                          geocode=None,
@@ -188,7 +201,7 @@ def search_tweets_tweepy(q,
     geocode (str): Returns only tweets by users within a given radius of the given geolocation. Should be of the form "latitude,longitude,radius", where radius can be either in "mi" or "km".
     lang (str): Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction.
     result_type (bool): Type of tweets to retrieve. Can be either "recent", "popular" or "mixed". Default is "mixed".
-    max_tweets (int): The maximum number of tweets to be retrieved. Note that Tweepy limits tweet searches to 300 tweets every 3 hours. Default is 10.
+    max_tweets (int): The maximum number of tweets to be retrieved. Default is 10. If Twitter API rate limit is reached, the program waits for 15 minutes before trying again.
 
     Returns
     -------
@@ -207,7 +220,7 @@ def search_tweets_tweepy(q,
         search_args['lang'] = lang
 
     api = authenticate_tweepy()
-    tweets = NLPTweetList(tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets))
+    tweets = NLPTweetList(limit_handler(tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
     return tweets
 
 # not working atm: https://github.com/Mottl/GetOldTweets3/issues/98
