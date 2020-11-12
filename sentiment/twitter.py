@@ -199,6 +199,7 @@ def search_tweets_tweepy(q,
     if datetime.datetime.strptime(until, '%Y-%m-%d') < (datetime.datetime.today() - datetime.timedelta(days=7)):
         raise ValueError('Tweepy limits search to 7 days before today (i.e. no tweets older than a week can be retrieved).')
 
+    q += " exclude:retweets exclude:replies"
     search_args = {'q': q, 'until': until, 'result_type': result_type}
     if geocode is not None:
         search_args['geocode'] = geocode
