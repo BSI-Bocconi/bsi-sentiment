@@ -14,6 +14,7 @@ import tweepy as tw
 
 from textblob import TextBlob
 
+
 class NLPTweet:
     """
     Base class that adds NLP methods to GetOldTweets3.models.Tweet and tweepy.models.Status.
@@ -39,8 +40,10 @@ class NLPTweet:
     geo (str)
     sentiment -> update description once method implemented
     """
-    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'polarity', 'subjectivity']
-    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status, sntwitter.Tweet]=None):
+    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date',
+                          'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'polarity', 'subjectivity']
+
+    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status, sntwitter.Tweet] = None):
         if isinstance(tweet, got.models.Tweet):
             self._from_got(tweet)
         elif isinstance(tweet, tw.models.Status):
@@ -58,11 +61,14 @@ class NLPTweet:
         # if multiple reply_to, take first like https://github.com/Mottl/GetOldTweets3/blob/master/GetOldTweets3/manager/TweetManager.py
         self.to = tweet.in_reply_to_screen_name[0] if tweet.in_reply_to_screen_name is not None else None
         self.text = tweet.full_text
-        self.date = datetime.datetime.strftime(tweet.created_at.astimezone(datetime.timezone.utc), '%Y-%m-%d')
+        self.date = datetime.datetime.strftime(
+            tweet.created_at.astimezone(datetime.timezone.utc), '%Y-%m-%d')
         self.retweets = tweet.retweet_count
         self.favorites = tweet.favorite_count
-        self.mentions = ' '.join([user['screen_name'] for user in tweet.entities['user_mentions']])
-        self.hashtags = ' '.join(hashtag['text'] for hashtag in tweet.entities['hashtags'])
+        self.mentions = ' '.join([user['screen_name']
+                                  for user in tweet.entities['user_mentions']])
+        self.hashtags = ' '.join(hashtag['text']
+                                 for hashtag in tweet.entities['hashtags'])
         self.geo = tweet.geo
 
     def _from_sn(self, tweet):
@@ -70,7 +76,8 @@ class NLPTweet:
         self.permalink = tweet.url
         self.username = tweet.username
         self.text = tweet.content
-        self.date = datetime.datetime.strftime(tweet.date.astimezone(datetime.timezone.utc), '%Y-%m-%d')
+        self.date = datetime.datetime.strftime(
+            tweet.date.astimezone(datetime.timezone.utc), '%Y-%m-%d')
 
     def __repr__(self):
         return str(self.__dict__)
@@ -91,11 +98,13 @@ class NLPTweet:
 
     def get_sentiment(self):
         # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
-        # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different 
+        # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
         # model chosen)
         # Add other suggestions here
-        processed_text = re.sub(r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text) # remove hashtags | retweets | links | usernames
+        # remove hashtags | retweets | links | usernames
+        processed_text = re.sub(
+            r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text)
         processed_text = TextBlob(processed_text)
         self.polarity = processed_text.sentiment.polarity
         self.subjectivity = processed_text.sentiment.subjectivity
@@ -104,16 +113,18 @@ class NLPTweet:
 class NLPTweetList:
     """
     Add NLP methods to the list of tweets returned by GetOldTweets3.manager.TweetManager.getTweets.
-    
+
     Parameters
     ----------
     tweets (Iterable[Union[GetOldTweets3.models.Tweet, tweepy.models.Status]])
     """
+
     def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status, sntwitter.Tweet]]):
         if not isinstance(tweets, Iterable):
-            raise TypeError(f"tweets must be an Iterable containing instances of either got.models.Tweet or tweepy.models.Status, got '{type(tweets).__name__}'")
+            raise TypeError(
+                f"tweets must be an Iterable containing instances of either got.models.Tweet or tweepy.models.Status, got '{type(tweets).__name__}'")
         self.tweets = list(map(NLPTweet, tweets))
-    
+
     def __getitem__(self, i):
         return self.tweets[i]
 
@@ -131,13 +142,15 @@ class NLPTweetList:
     @staticmethod
     def from_csv(path: Union[str, Path], delimiter=',', validate_columns=True):
         if not isinstance(path, (str, Path)):
-            raise TypeError(f"path must be of type Union[str, Path], got '{type(path).__name__}'")
+            raise TypeError(
+                f"path must be of type Union[str, Path], got '{type(path).__name__}'")
         elif isinstance(path, str):
             path = Path(path)
         if not path.parent.is_dir():
             raise FileNotFoundError(f"path '{str(path)}'is not valid")
         if not path.suffix == '.csv':
-            raise FileNotFoundError(f"path must be pointing at a .csv file, got f'{str(path)}'")
+            raise FileNotFoundError(
+                f"path must be pointing at a .csv file, got f'{str(path)}'")
         with path.open(newline='') as f:
             reader = csv.reader(f, delimiter=delimiter)
             columns = next(reader)
@@ -146,27 +159,32 @@ class NLPTweetList:
                     try:
                         assert col in NLPTweet.DEFAULT_ATTRIBUTES
                     except AssertionError:
-                        raise KeyError(f"column '{col}' is not a valid NLPTweet attribute")
-            tweets = list(map(lambda row: NLPTweet.from_dict(dict(zip(columns, [x if x != '' else None for x in row]))), reader))
+                        raise KeyError(
+                            f"column '{col}' is not a valid NLPTweet attribute")
+            tweets = list(map(lambda row: NLPTweet.from_dict(
+                dict(zip(columns, [x if x != '' else None for x in row]))), reader))
         return tweets
-    
-    def to_csv(self, path: Union[str, Path], columns: List[str]=None, delimiter=','):
+
+    def to_csv(self, path: Union[str, Path], columns: List[str] = None, delimiter=','):
         if not isinstance(path, (str, Path)):
-            raise TypeError(f"path must be of type Union[str, Path], got '{type(path).__name__}'")
+            raise TypeError(
+                f"path must be of type Union[str, Path], got '{type(path).__name__}'")
         elif isinstance(path, str):
             path = Path(path)
         if not path.parent.is_dir():
             raise FileNotFoundError(f"path '{str(path)}'is not valid")
         if not path.suffix == '.csv':
-            raise FileNotFoundError(f"path must be pointing at a .csv file, got f'{str(path)}'")
-        if columns is None: 
+            raise FileNotFoundError(
+                f"path must be pointing at a .csv file, got f'{str(path)}'")
+        if columns is None:
             columns = list(self[0].__dict__.keys())
-        
+
         with path.open('w', newline='') as f:
             writer = csv.writer(f, delimiter=delimiter)
             writer.writerow(columns)
             for tweet in self:
                 writer.writerow([tweet[col] for col in columns])
+
 
 def authenticate_tweepy():
     """
@@ -179,10 +197,13 @@ def authenticate_tweepy():
     credentials_path = Path('./config/credentials.json')
     with credentials_path.open() as f:
         credentials = json.load(f)
-    auth = tw.OAuthHandler(credentials['api_key'], credentials['api_key_secret'])
-    auth.set_access_token(credentials['access_token'], credentials['access_token_secret'])
+    auth = tw.OAuthHandler(
+        credentials['api_key'], credentials['api_key_secret'])
+    auth.set_access_token(
+        credentials['access_token'], credentials['access_token_secret'])
     api = tw.API(auth)
     return api
+
 
 def limit_handler(cursor):
     """
@@ -193,9 +214,10 @@ def limit_handler(cursor):
             yield cursor.next()
         except tw.RateLimitError:
             print("Reached Tweepy API rate limit. Trying again in 15 minutes. For more information, see https://developer.twitter.com/en/docs/twitter-api/v1/rate-limits.")
-            time.sleep(15 * 60) # wait 15 minutes
+            time.sleep(15 * 60)  # wait 15 minutes
         except StopIteration:
             break
+
 
 def search_tweets_tweepy(q,
                          until=None,
@@ -222,7 +244,8 @@ def search_tweets_tweepy(q,
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
     if datetime.datetime.strptime(until, '%Y-%m-%d') < (datetime.datetime.today() - datetime.timedelta(days=7)):
-        raise ValueError('Tweepy limits search to 7 days before today (i.e. no tweets older than a week can be retrieved).')
+        raise ValueError(
+            'Tweepy limits search to 7 days before today (i.e. no tweets older than a week can be retrieved).')
 
     q = f"{q} exclude:retweets exclude:replies"
     search_args = {'q': q, 'until': until, 'result_type': result_type}
@@ -232,10 +255,13 @@ def search_tweets_tweepy(q,
         search_args['lang'] = lang
 
     api = authenticate_tweepy()
-    tweets = NLPTweetList(limit_handler(tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
+    tweets = NLPTweetList(limit_handler(
+        tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
     return tweets
 
 # not working atm: https://github.com/Mottl/GetOldTweets3/issues/98
+
+
 def search_tweets_got(q,
                       since=None,
                       until=None,
@@ -264,7 +290,8 @@ def search_tweets_got(q,
     tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
     """
     if since is None:
-        since = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
+        since = datetime.datetime.strftime(
+            datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
 
@@ -273,16 +300,17 @@ def search_tweets_got(q,
                                            .setUntil(until)
                                            .setTopTweets(only_top)
                                            .setMaxTweets(max_tweets))
-    
+
     if username is not None:
         criteria = criteria.setUsername(username)
     if near is not None:
         criteria = criteria.setNear(near)
         if radius is not None:
             criteria = criteria.setWithin(radius)
-    
+
     tweets = NLPTweetList(got.manager.TweetManager().getTweets(criteria))
     return tweets
+
 
 def search_tweets_sn(q,
                      since=None,
@@ -311,7 +339,8 @@ def search_tweets_sn(q,
     tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
     """
     if since is None:
-        since = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
+        since = datetime.datetime.strftime(
+            datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
     if max_tweets == -1:
@@ -325,6 +354,7 @@ def search_tweets_sn(q,
         criteria += f" near:{near}"
     if radius is not None:
         criteria += f" within:{criteria}"
-    
-    tweets = NLPTweetList(islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets))
+
+    tweets = NLPTweetList(
+        islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets))
     return tweets
