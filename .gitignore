@@ -144,3 +144,5 @@ config*
 *.csv*
 # config files
 *.ini
+# vs code config files
+*.vscode
