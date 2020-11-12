@@ -2,11 +2,14 @@ import csv
 import datetime
 import json
 import re
+import sys
+import time
+from itertools import islice
 from pathlib import Path
 from typing import Iterable, List, Union
-import time
 
 import GetOldTweets3 as got
+import snscrape.modules.twitter as sntwitter
 import tweepy as tw
 
 from textblob import TextBlob
@@ -37,28 +40,37 @@ class NLPTweet:
     sentiment -> update description once method implemented
     """
     DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date', 'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'polarity', 'subjectivity']
-    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status]=None):
+    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status, sntwitter.Tweet]=None):
         if isinstance(tweet, got.models.Tweet):
             self._from_got(tweet)
         elif isinstance(tweet, tw.models.Status):
             self._from_tweepy(tweet)
+        elif isinstance(tweet, sntwitter.Tweet):
+            self._from_sn(tweet)
 
     def _from_got(self, tweet):
         self.__dict__ = tweet.__dict__.copy()
 
     def _from_tweepy(self, tweet):
-            self.id = tweet.id_str
-            self.permalink = f"https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}"
-            self.username = tweet.user.screen_name
-            # if multiple reply_to, take first like https://github.com/Mottl/GetOldTweets3/blob/master/GetOldTweets3/manager/TweetManager.py
-            self.to = tweet.in_reply_to_screen_name[0] if tweet.in_reply_to_screen_name is not None else None
-            self.text = tweet.full_text
-            self.date = datetime.datetime.strftime(tweet.created_at.astimezone(datetime.timezone.utc), '%Y-%m-%d')
-            self.retweets = tweet.retweet_count
-            self.favorites = tweet.favorite_count
-            self.mentions = ' '.join([user['screen_name'] for user in tweet.entities['user_mentions']])
-            self.hashtags = ' '.join(hashtag['text'] for hashtag in tweet.entities['hashtags'])
-            self.geo = tweet.geo
+        self.id = tweet.id_str
+        self.permalink = f"https://twitter.com/{tweet.user.screen_name}/status/{tweet.id}"
+        self.username = tweet.user.screen_name
+        # if multiple reply_to, take first like https://github.com/Mottl/GetOldTweets3/blob/master/GetOldTweets3/manager/TweetManager.py
+        self.to = tweet.in_reply_to_screen_name[0] if tweet.in_reply_to_screen_name is not None else None
+        self.text = tweet.full_text
+        self.date = datetime.datetime.strftime(tweet.created_at.astimezone(datetime.timezone.utc), '%Y-%m-%d')
+        self.retweets = tweet.retweet_count
+        self.favorites = tweet.favorite_count
+        self.mentions = ' '.join([user['screen_name'] for user in tweet.entities['user_mentions']])
+        self.hashtags = ' '.join(hashtag['text'] for hashtag in tweet.entities['hashtags'])
+        self.geo = tweet.geo
+
+    def _from_sn(self, tweet):
+        self.id = tweet.id
+        self.permalink = tweet.url
+        self.username = tweet.username
+        self.text = tweet.content
+        self.date = datetime.datetime.strftime(tweet.date.astimezone(datetime.timezone.utc), '%Y-%m-%d')
 
     def __repr__(self):
         return str(self.__dict__)
@@ -97,7 +109,7 @@ class NLPTweetList:
     ----------
     tweets (Iterable[Union[GetOldTweets3.models.Tweet, tweepy.models.Status]])
     """
-    def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status]]):
+    def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status, sntwitter.Tweet]]):
         if not isinstance(tweets, Iterable):
             raise TypeError(f"tweets must be an Iterable containing instances of either got.models.Tweet or tweepy.models.Status, got '{type(tweets).__name__}'")
         self.tweets = list(map(NLPTweet, tweets))
@@ -190,7 +202,8 @@ def search_tweets_tweepy(q,
                          geocode=None,
                          lang=None,
                          result_type='mixed',
-                         max_tweets=10):
+                         max_tweets=10,
+                         **kargs):
     """
     Search tweets according to keyword arguments specified using Tweepy.
 
@@ -231,7 +244,8 @@ def search_tweets_got(q,
                       near=None,
                       radius=None,
                       only_top=False,
-                      max_tweets=-1):
+                      max_tweets=-1,
+                      **kargs):
     """
     Search tweets according to keyword arguments specified using GetOldTweets3. 
 
@@ -241,7 +255,7 @@ def search_tweets_got(q,
     since (str. "yyyy-mm-dd"): A lower bound date (UTC) to restrict search. Default is 7 days before today.
     until (str. "yyyy-mm-dd"): An upper bound date (not included) to restrict search. Default is today.
     username (str or iterable): An optional specific username(s) from a twitter account (with or without "@"). Default is no username restriction.
-    near (str): A reference location area from where tweets were generated. Default is no reference area.
+    near (str): A reference location area (e.g. Milan) from where tweets were generated. Default is no reference area.
     radius (str): A distance radius (e.g. 15km) from location specified by "near". Meaningful only if "near" is set.
     only_top (bool): If True only the Top Tweets will be retrieved. Default is False.
     max_tweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved. Default is -1.
@@ -252,7 +266,6 @@ def search_tweets_got(q,
     """
     if since is None:
         since = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
-    
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
 
@@ -270,4 +283,50 @@ def search_tweets_got(q,
             criteria = criteria.setWithin(radius)
     
     tweets = NLPTweetList(got.manager.TweetManager().getTweets(criteria))
+    return tweets
+
+def search_tweets_sn(q,
+                     since=None,
+                     until=None,
+                     username=None,
+                     near=None,
+                     radius=None,
+                     only_top=False,
+                     max_tweets=-1,
+                     **kargs):
+    """
+    Search tweets according to keyword arguments specified using snscrape. 
+
+    Parameters
+    ----------
+    q (str): A query text to be matched.
+    since (str. "yyyy-mm-dd"): A lower bound date (UTC) to restrict search. Default is 7 days before today.
+    until (str. "yyyy-mm-dd"): An upper bound date (not included) to restrict search. Default is today.
+    username (str or iterable): An optional specific username(s) from a twitter account (with or without "@"). Default is no username restriction.
+    near (str): A reference location area (e.g. Milan) from where tweets were generated. Default is no reference area.
+    radius (str): A distance radius (e.g. 15km) from location specified by "near". Meaningful only if "near" is set.
+    only_top (bool): If True only the Top Tweets will be retrieved. Default is False.
+    max_tweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved. Default is -1.
+
+    Returns
+    -------
+    tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
+    """
+    if since is None:
+        since = datetime.datetime.strftime(datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
+    if until is None:
+        until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
+    if max_tweets == -1:
+        max_tweets = sys.maxsize
+
+    criteria = f"{q} since:{since} until:{until} exclude:retweets exclude:replies"
+
+    if username is not None:
+        criteria += f" from:{username}"
+    if near is not None:
+        criteria += f" near:{near}"
+    if radius is not None:
+        criteria += f" within:{criteria}"
+    
+    tweets = NLPTweetList(islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets))
     return tweets
