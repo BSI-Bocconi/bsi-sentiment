@@ -202,8 +202,7 @@ def search_tweets_tweepy(q,
                          geocode=None,
                          lang=None,
                          result_type='mixed',
-                         max_tweets=10,
-                         **kargs):
+                         max_tweets=10):
     """
     Search tweets according to keyword arguments specified using Tweepy.
 
@@ -225,7 +224,7 @@ def search_tweets_tweepy(q,
     if datetime.datetime.strptime(until, '%Y-%m-%d') < (datetime.datetime.today() - datetime.timedelta(days=7)):
         raise ValueError('Tweepy limits search to 7 days before today (i.e. no tweets older than a week can be retrieved).')
 
-    q += " exclude:retweets exclude:replies"
+    q = f"{q} exclude:retweets exclude:replies"
     search_args = {'q': q, 'until': until, 'result_type': result_type}
     if geocode is not None:
         search_args['geocode'] = geocode
@@ -291,7 +290,6 @@ def search_tweets_sn(q,
                      username=None,
                      near=None,
                      radius=None,
-                     only_top=False,
                      max_tweets=-1,
                      **kargs):
     """
