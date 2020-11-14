@@ -10,7 +10,8 @@ parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. T
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")
 parser.add_argument("dest", type=str, nargs="?", help="Output file location. Analysis/configuration/download output file is stored here. Default is current directory.")
 parser.add_argument("-c", "--config", type=str, help="Config file location. If action is 'analyze' or 'download', configuration file is read from here.")
-parser.add_argument("-a", "--analyzer", type=str, default='vader', choices=["vader","textblob-pa","textblob-nb"],help="Analyzer method for sentiment analysis. Default is 'vader'.")
+#TODO: Add more documentation abput the methods for analysis.
+parser.add_argument("-a", "--analyzer", type=str, default='vader', metavar="ANALYZER", choices=["vader","textblob-pa","textblob-nb"], help="Analyzer method for sentiment analysis. Avilable options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.")
 parser.add_argument("-q", "--query", type=str, default="", metavar="query", dest="q", help="A query text to be matched")
 parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before today. Used only by Snscrape.")
 parser.add_argument("-u", "--until", type=str, help="An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.")
