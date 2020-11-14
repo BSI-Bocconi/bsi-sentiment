@@ -149,7 +149,7 @@ class NLPTweetList:
         if columns is None: 
             columns = list(self[0].__dict__.keys())
         
-        with path.open('w', newline='') as f:
+        with path.open('w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f, delimiter=delimiter)
             writer.writerow(columns)
             for tweet in self:
