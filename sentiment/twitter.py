@@ -13,6 +13,8 @@ import snscrape.modules.twitter as sntwitter
 import tweepy as tw
 
 from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 
 class NLPTweet:
@@ -96,7 +98,7 @@ class NLPTweet:
         tweet.__dict__ = d.copy()
         return tweet
 
-    def get_sentiment(self):
+    def get_sentiment(self, method):
         # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
         # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
@@ -105,9 +107,24 @@ class NLPTweet:
         # remove hashtags | retweets | links | usernames
         processed_text = re.sub(
             r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text)
-        processed_text = TextBlob(processed_text)
-        self.polarity = processed_text.sentiment.polarity
-        self.subjectivity = processed_text.sentiment.subjectivity
+        # select method chosen
+        if method == "textblob-pa":
+            processed_text = TextBlob(processed_text)
+            self.polarity = processed_text.sentiment.polarity
+            self.subjectivity = processed_text.sentiment.subjectivity
+        elif method == "textblob-nb":
+            processed_text = TextBlob(processed_text, analyzer=NaiveBayesAnalyzer())
+            self.classification = processed_text.sentiment.classification 
+            self.p_pos = processed_text.sentiment.p_pos
+            self.p_neg = processed_text.sentiment.p_neg
+        elif method == "vader":
+            analyzer = SentimentIntensityAnalyzer()
+            scores = analyzer.polarity_scores(processed_text)
+            self.polarity = scores['compound']
+            self.positive_words = scores['pos']
+            self.neutral_words = scores['neu']
+            self.negative_words = scores['neg']
+
 
 
 class NLPTweetList:
@@ -135,9 +152,9 @@ class NLPTweetList:
         for tweet in self.tweets:
             yield tweet
 
-    def get_sentiment(self):
+    def get_sentiment(self, method):
         for tweet in self:
-            tweet.get_sentiment()
+            tweet.get_sentiment(method)
 
     @staticmethod
     def from_csv(path: Union[str, Path], delimiter=',', validate_columns=True):
