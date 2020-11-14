@@ -4,10 +4,13 @@ import json
 from sentiment.twitter import search_tweets_tweepy, search_tweets_sn
 from sentiment.utils import validate_args
 
+from nltk import data, download
+
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.")
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")
 parser.add_argument("dest", type=str, nargs="?", help="Output file location. Analysis/configuration/download output file is stored here. Default is current directory.")
 parser.add_argument("-c", "--config", type=str, help="Config file location. If action is 'analyze' or 'download', configuration file is read from here.")
+parser.add_argument("-a", "--analyzer", type=str, default='vader', choices=["vader","textblob-pa","textblob-nb"],help="Analyzer method for sentiment analysis. Default is 'vader'.")
 parser.add_argument("-q", "--query", type=str, default="", metavar="query", dest="q", help="A query text to be matched")
 parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before today. Used only by Snscrape.")
 parser.add_argument("-u", "--until", type=str, help="An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.")
@@ -42,7 +45,23 @@ else:
     if len(tweets) == 0:
         raise Exception("The search returned no tweets. Please double check your query.")
     if args.command == 'analyze':
-        tweets.get_sentiment() # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
+        #NOTE: here I wanted to check whether the user has downloaded the necessary nltk packages. 
+        # It works, but it might be done in a better way.
+        if args.analyzer == 'textblob-nb':
+            try:
+                data.find('corpora/movie_reviews')
+            except LookupError:
+                download('movie_reviews')
+            try:
+                data.find('tokenizers/punkt')
+            except LookupError:
+                download('punkt') 
+        elif args.analyzer == 'vader':
+            try:
+                data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
+            except LookupError:
+                download('vader_lexicon')
+        tweets.get_sentiment(method=args.analyzer) # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
     if args.dest is None:
         args.dest = './result.csv'
     tweets.to_csv(args.dest) # TODO: add options to select columns - Stefano
