@@ -1,5 +1,5 @@
 import argparse
-import configparser
+import json
 
 from sentiment.twitter import search_tweets_tweepy, search_tweets_sn
 from sentiment.utils import validate_args
@@ -23,20 +23,19 @@ args = parser.parse_args()
 validated_args = validate_args(args)
 
 if args.command == "configure":
-    config = configparser.ConfigParser(allow_no_value=True)
-    config['bsi_sentiment'] = {argname: str(argval) for argname, argval in validated_args.items() if argval is not None}
-    config['bsi_sentiment']['tweepy'] = args.tweepy
+    config = {argname: argval for argname, argval in validated_args.items() if argval is not None}
+    config['tweepy'] = args.tweepy
     if args.dest is None:
-        args.dest = './config.ini'
+        args.dest = './config.json'
     with open(args.dest, 'w') as f:
-        config.write(f)
+        json.dump(config, f)
 else:
     if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
-        search = search_tweets_tweepy if config['bsi_sentiment']['tweepy'] else search_tweets_sn
-        del config['bsi_sentiment']['tweepy']
-        tweets = search(**config['bsi_sentiment'])
+        with open(args.config) as f:
+            config = json.load(f)
+        search = search_tweets_tweepy if config['tweepy'] else search_tweets_sn
+        del config['tweepy']
+        tweets = search(**config)
     else:
         search = search_tweets_tweepy if args.tweepy else search_tweets_sn
         tweets = search(**validated_args)
