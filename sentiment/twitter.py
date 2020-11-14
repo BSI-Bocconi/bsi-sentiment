@@ -99,6 +99,14 @@ class NLPTweet:
         return tweet
 
     def get_sentiment(self, method):
+        """Analyzer method for sentiment over self.text. Multiple methods available. Default is 'vader'.
+
+        Args:
+            method (str): Choice of different methods for sentiment extraction:
+                - 'vader'(default): Give a sentiment intensity score to sentences, according to VADER sentiment analysis tool. Metrics stored are 'polarity', 'pos_w', 'neu_w', 'neg_w'.
+                - 'textblob-pa': Uses PatternAnalyzer from textblob to compute 'polarity' (in range [-1.0, 1.0]) and 'subjectivity' (in range [0.0,1.0]).
+                - 'textblob-nb': Uses NaiveBayesAnalyzer from textblob to classify the sentiment. Computes also 'p_pos' and 'p_neg', as probabilities.
+        """        
         # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
         # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different
         # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
@@ -121,9 +129,9 @@ class NLPTweet:
             analyzer = SentimentIntensityAnalyzer()
             scores = analyzer.polarity_scores(processed_text)
             self.polarity = scores['compound']
-            self.positive_words = scores['pos']
-            self.neutral_words = scores['neu']
-            self.negative_words = scores['neg']
+            self.pos_w = scores['pos']
+            self.neu_w = scores['neu']
+            self.neg_w = scores['neg']
 
 
 
