@@ -147,3 +147,5 @@ config*
 *.json
 # vs code config files
 *.vscode
+
+sentiment/methods_doc.txt
