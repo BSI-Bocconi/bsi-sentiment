@@ -2,9 +2,7 @@ import argparse
 import json
 
 from sentiment.twitter import search_tweets_tweepy, search_tweets_sn
-from sentiment.utils import validate_args
-
-from nltk import data, download
+from sentiment.utils import validate_args, load_nltk
 
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.")
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")
@@ -46,22 +44,10 @@ else:
     if len(tweets) == 0:
         raise Exception("The search returned no tweets. Please double check your query.")
     if args.command == 'analyze':
-        #NOTE: here I wanted to check whether the user has downloaded the necessary nltk packages. 
-        # It works, but it might be done in a better way.
-        if args.analyzer == 'textblob-nb':
-            try:
-                data.find('corpora/movie_reviews')
-            except LookupError:
-                download('movie_reviews')
-            try:
-                data.find('tokenizers/punkt')
-            except LookupError:
-                download('punkt') 
-        elif args.analyzer == 'vader':
-            try:
-                data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
-            except LookupError:
-                download('vader_lexicon')
+        # Load (or download, if not already done) required NLTK resources
+        load_nltk(args.analyzer)
+        
+        # Sentiment analysis
         tweets.get_sentiment(method=args.analyzer) # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
     if args.dest is None:
         args.dest = './result.csv'

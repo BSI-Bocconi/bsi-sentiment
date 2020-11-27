@@ -1,6 +1,7 @@
 import re
 from datetime import datetime as dt
 from datetime import timedelta as td
+from nltk import data, download
 
 DATE_FORMAT = "%Y-%m-%d"
 FLOAT_REGEX = "[+-]?([0-9]*[.])?[0-9]+"
@@ -68,3 +69,20 @@ def validate_args(args):
     if args.tweepy:
         return validate_tweepy(args, validated_args)
     return validate_snscrape(args, validated_args)
+
+
+def load_nltk(analyzer):
+    if analyzer == 'textblob-nb':
+        try:
+            data.find('corpora/movie_reviews')
+        except LookupError:
+            download('movie_reviews')
+        try:
+            data.find('tokenizers/punkt')
+        except LookupError:
+            download('punkt') 
+    elif analyzer == 'vader':
+        try:
+            data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
+        except LookupError:
+            download('vader_lexicon')
