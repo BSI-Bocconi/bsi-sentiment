@@ -4,11 +4,12 @@ import json
 from .twitter import search_tweets_tweepy, search_tweets_sn
 from .utils import validate_args, load_nltk
 
+# TODO: improve argument parser using getopts
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.")
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")
 parser.add_argument("dest", type=str, nargs="?", help="Output file location. Analysis/configuration/download output file is stored here. Default is current directory.")
 parser.add_argument("-c", "--config", type=str, help="Config file location. If action is 'analyze' or 'download', configuration file is read from here.")
-#TODO: Add more documentation abput the methods for analysis.
+# TODO: allow user to specify more than one analyzer at the same time
 parser.add_argument("-a", "--analyzer", type=str, default='vader', metavar="ANALYZER", choices=["vader","textblob-pa","textblob-nb"], help="Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.")
 parser.add_argument("-q", "--query", type=str, default="", metavar="query", dest="q", help="A query text to be matched")
 parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before --until. Used only by Snscrape.")
@@ -24,6 +25,7 @@ args = parser.parse_args()
 
 validated_args = validate_args(args)
 
+# TODO: move write_config to utils
 if args.command == "configure":
     config = {argname: argval for argname, argval in validated_args.items() if argval is not None}
     config['tweepy'] = args.tweepy
@@ -32,6 +34,7 @@ if args.command == "configure":
     with open(args.dest, 'w') as f:
         json.dump(config, f)
 else:
+    # TODO: move write_config to sentiment.utils
     if args.config is not None:
         with open(args.config) as f:
             config = json.load(f)
@@ -48,7 +51,7 @@ else:
         load_nltk(args.analyzer)
 
         # Sentiment analysis
-        tweets.get_sentiment(method=args.analyzer) # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
+        tweets.get_sentiment(method=args.analyzer)
     if args.dest is None:
         args.dest = './result.csv'
-    tweets.to_csv(args.dest) # TODO: add options to select columns - Stefano
+    tweets.to_csv(args.dest)

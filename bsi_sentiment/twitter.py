@@ -109,12 +109,6 @@ class NLPTweet:
             - 'textblob-pa': Uses PatternAnalyzer from textblob to compute 'polarity' (in range [-1.0, 1.0]) and 'subjectivity' (in range [0.0,1.0]).
             - 'textblob-nb': Uses NaiveBayesAnalyzer from textblob to classify the sentiment. Computes also 'p_pos' and 'p_neg', as probabilities.
         """        
-        # TODO: add support to more arguments for textblob and nltk - this method MUST be expanded
-        # Alternative: if we want to be fancy create SentimentModel class that trains/fine-tunes different
-        # model (naive bayes/LSTM/ULMFiT/BERT?) to be trained on long NLPTweetList (train set size depends on
-        # model chosen)
-        # Add other suggestions here
-        # remove hashtags | retweets | links | usernames
         processed_text = re.sub(
             r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text)
         # select method chosen
@@ -212,6 +206,7 @@ class NLPTweetList:
                 writer.writerow([tweet[col] for col in columns])
 
 
+# TODO: add --credential options to parser
 def authenticate_tweepy():
     """
     Authenticates to Twitter API using keys stored at ./config/credentials.json

@@ -8,6 +8,7 @@ FLOAT_REGEX = "[+-]?([0-9]*[.])?[0-9]+"
 ISO_REGEX = "^[a-z]{2}$"
 RADIUS_REGEX = "^[0-9]+(km|mi)$"
 
+# TODO: add docstrings
 
 def validate_common(args):
     if args.until is not None:
