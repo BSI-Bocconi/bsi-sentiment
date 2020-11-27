@@ -11,7 +11,7 @@ parser.add_argument("-c", "--config", type=str, help="Config file location. If a
 #TODO: Add more documentation abput the methods for analysis.
 parser.add_argument("-a", "--analyzer", type=str, default='vader', metavar="ANALYZER", choices=["vader","textblob-pa","textblob-nb"], help="Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.")
 parser.add_argument("-q", "--query", type=str, default="", metavar="query", dest="q", help="A query text to be matched")
-parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before today. Used only by Snscrape.")
+parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before --until. Used only by Snscrape.")
 parser.add_argument("-u", "--until", type=str, help="An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.")
 parser.add_argument("-n", "--geo", type=str, help="Return only tweets by users from given geolocation. It must be a location name (e.g. 'Milan') if using Snscrape or a string of the form 'latitude,longitude' if using Tweepy.")
 parser.add_argument("-r", "--radius", type=str, help="Must be used together with --geo. Return only tweets by users within a given radius from the selected location. It must be either in 'mi' or 'km' (e.g. '15km')")
@@ -46,7 +46,7 @@ else:
     if args.command == 'analyze':
         # Load (or download, if not already done) required NLTK resources
         load_nltk(args.analyzer)
-        
+
         # Sentiment analysis
         tweets.get_sentiment(method=args.analyzer) # TODO: more advanced sentiment analysis (at the moment only textblob) - Kasra + Pietro
     if args.dest is None:

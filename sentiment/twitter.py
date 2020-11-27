@@ -134,7 +134,6 @@ class NLPTweet:
             self.neg_w = scores['neg']
 
 
-
 class NLPTweetList:
     """
     Add NLP methods to the list of tweets returned by GetOldTweets3.manager.TweetManager.getTweets.
@@ -285,8 +284,6 @@ def search_tweets_tweepy(q,
     return tweets
 
 # not working atm: https://github.com/Mottl/GetOldTweets3/issues/98
-
-
 def search_tweets_got(q,
                       since=None,
                       until=None,
@@ -314,11 +311,11 @@ def search_tweets_got(q,
     -------
     tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
     """
-    if since is None:
-        since = datetime.datetime.strftime(
-            datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
+    if since is None:
+        since = datetime.datetime.strftime(
+            datetime.datetime.strptime(until, '%Y-%m-%d') - datetime.timedelta(days=7), '%Y-%m-%d')
 
     criteria = (got.manager.TweetCriteria().setQuerySearch(q)
                                            .setSince(since)
@@ -363,11 +360,11 @@ def search_tweets_sn(q,
     -------
     tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
     """
-    if since is None:
-        since = datetime.datetime.strftime(
-            datetime.date.today() - datetime.timedelta(days=7), '%Y-%m-%d')
     if until is None:
         until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
+    if since is None:
+        since = datetime.datetime.strftime(
+            datetime.datetime.strptime(until, '%Y-%m-%d') - datetime.timedelta(days=7), '%Y-%m-%d')
     if max_tweets == -1:
         max_tweets = sys.maxsize
 
