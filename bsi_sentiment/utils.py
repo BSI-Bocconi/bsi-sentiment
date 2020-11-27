@@ -1,6 +1,8 @@
+import json
 import re
 from datetime import datetime as dt
 from datetime import timedelta as td
+
 from nltk import data, download
 
 DATE_FORMAT = "%Y-%m-%d"
@@ -87,3 +89,18 @@ def load_nltk(analyzer):
             data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
         except LookupError:
             download('vader_lexicon')
+
+
+def read_config(config_path):
+    with open(config_path) as f:
+        config = json.load(f)
+    tweepy = config['tweepy']
+    del config['tweepy']
+    return config, tweepy
+
+def write_config(args, validated_args):
+    config = {argname: argval for argname, argval in validated_args.items() if argval is not None}
+    config['tweepy'] = args.tweepy
+    dest = args.dest if args.dest is not None else './config.ini'
+    with open(dest, 'w') as f:
+        json.dump(config, f)

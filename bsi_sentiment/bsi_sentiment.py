@@ -1,8 +1,7 @@
 import argparse
-import json
 
 from .twitter import search_tweets_tweepy, search_tweets_sn
-from .utils import validate_args, load_nltk
+from .utils import validate_args, load_nltk, read_config, write_config
 
 # TODO: improve argument parser using getopts
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.")
@@ -27,19 +26,12 @@ validated_args = validate_args(args)
 
 # TODO: move write_config to utils
 if args.command == "configure":
-    config = {argname: argval for argname, argval in validated_args.items() if argval is not None}
-    config['tweepy'] = args.tweepy
-    if args.dest is None:
-        args.dest = './config.json'
-    with open(args.dest, 'w') as f:
-        json.dump(config, f)
+    write_config(args, validated_args)
 else:
     # TODO: move write_config to sentiment.utils
     if args.config is not None:
-        with open(args.config) as f:
-            config = json.load(f)
-        search = search_tweets_tweepy if config['tweepy'] else search_tweets_sn
-        del config['tweepy']
+        config, tweepy = read_config(args.config)
+        search = search_tweets_tweepy if tweepy else search_tweets_sn
         tweets = search(**config)
     else:
         search = search_tweets_tweepy if args.tweepy else search_tweets_sn
