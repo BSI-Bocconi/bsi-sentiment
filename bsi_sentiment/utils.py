@@ -1,3 +1,4 @@
+import configparser
 import json
 import re
 from datetime import datetime as dt
@@ -92,15 +93,18 @@ def load_nltk(analyzer):
 
 
 def read_config(config_path):
-    with open(config_path) as f:
-        config = json.load(f)
-    tweepy = config['tweepy']
-    del config['tweepy']
-    return config, tweepy
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    validated_args = config._sections['bsi-sentiment']
+    validated_args['max_tweets'] = config['bsi-sentiment'].getint('max_tweets')
+    tweepy = config['bsi-sentiment'].getboolean('tweepy')
+    del validated_args['tweepy'] 
+    return validated_args, tweepy
 
 def write_config(args, validated_args):
-    config = {argname: argval for argname, argval in validated_args.items() if argval is not None}
-    config['tweepy'] = args.tweepy
+    config = configparser.ConfigParser()
+    config['bsi-sentiment'] = {argname: str(argval) for argname, argval in validated_args.items() if argval is not None}
+    config['bsi-sentiment']['tweepy'] = str(args.tweepy)
     dest = args.dest if args.dest is not None else './config.ini'
     with open(dest, 'w') as f:
-        json.dump(config, f)
+        config.write(f)

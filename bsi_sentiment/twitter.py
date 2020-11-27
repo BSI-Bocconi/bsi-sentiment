@@ -255,7 +255,7 @@ def search_tweets_tweepy(q,
     until (str. "yyyy-mm-dd"): An upper bound date (not included) to restrict search. Default is today. Tweepy limits search to 7 days before today (i.e. no tweets older than a week).
     geocode (str): Returns only tweets by users within a given radius of the given geolocation. Should be of the form "latitude,longitude,radius", where radius can be either in "mi" or "km".
     lang (str): Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction.
-    result_type (bool): Type of tweets to retrieve. Can be either "recent", "popular" or "mixed". Default is "mixed".
+    result_type (str): Type of tweets to retrieve. Can be either "recent", "popular" or "mixed". Default is "mixed".
     max_tweets (int): The maximum number of tweets to be retrieved. Default is 10. If Twitter API rate limit is reached, the program waits for 15 minutes before trying again.
 
     Returns
@@ -288,8 +288,7 @@ def search_tweets_got(q,
                       near=None,
                       radius=None,
                       only_top=False,
-                      max_tweets=-1,
-                      **kargs):
+                      max_tweets=-1):
     """
     Search tweets according to keyword arguments specified using GetOldTweets3. 
 
@@ -338,8 +337,7 @@ def search_tweets_sn(q,
                      near=None,
                      radius=None,
                      lang=None,
-                     max_tweets=-1,
-                     **kargs):
+                     max_tweets=-1):
     """
     Search tweets according to keyword arguments specified using snscrape. 
 
@@ -352,7 +350,6 @@ def search_tweets_sn(q,
     near (str): A reference location area (e.g. Milan) from where tweets were generated. Default is no reference area.
     radius (str): A distance radius (e.g. 15km) from location specified by "near". Meaningful only if "near" is set.
     lang (str): Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction.
-    only_top (bool): If True only the Top Tweets will be retrieved. Default is False.
     max_tweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved. Default is -1.
 
     Returns

@@ -25,17 +25,16 @@ parser.add_argument("--tweepy", action="store_true", default=False, dest="tweepy
 def main():
     args = parser.parse_args()
     validated_args = validate_args(args)
-    
+
     if args.command == "configure":
         write_config(args, validated_args)
     else:
         if args.config is not None:
-            config, tweepy = read_config(args.config)
+            validated_args, tweepy = read_config(args.config)
             search = search_tweets_tweepy if tweepy else search_tweets_sn
-            tweets = search(**config)
         else:
             search = search_tweets_tweepy if args.tweepy else search_tweets_sn
-            tweets = search(**validated_args)
+        tweets = search(**validated_args)
         if len(tweets) == 0:
             raise Exception("The search returned no tweets. Please double check your query.")
         if args.command == 'analyze':
