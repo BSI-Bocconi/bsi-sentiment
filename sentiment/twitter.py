@@ -340,6 +340,7 @@ def search_tweets_sn(q,
                      username=None,
                      near=None,
                      radius=None,
+                     lang=None,
                      max_tweets=-1,
                      **kargs):
     """
@@ -353,6 +354,7 @@ def search_tweets_sn(q,
     username (str or iterable): An optional specific username(s) from a twitter account (with or without "@"). Default is no username restriction.
     near (str): A reference location area (e.g. Milan) from where tweets were generated. Default is no reference area.
     radius (str): A distance radius (e.g. 15km) from location specified by "near". Meaningful only if "near" is set.
+    lang (str): Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction.
     only_top (bool): If True only the Top Tweets will be retrieved. Default is False.
     max_tweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved. Default is -1.
 
@@ -376,6 +378,8 @@ def search_tweets_sn(q,
         criteria += f" near:{near}"
     if radius is not None:
         criteria += f" within:{criteria}"
+    if lang is not None:
+        criteria += f" lang:{lang}"
 
     tweets = NLPTweetList(
         islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets))
