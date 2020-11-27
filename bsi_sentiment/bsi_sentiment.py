@@ -20,30 +20,34 @@ parser.add_argument("--user", type=str, metavar="username", dest="username", hel
 parser.add_argument("--result_type", type=str, default="mixed", choices=["recent", "popular", "mixed"], help="Type of tweets to retrieve. Can be either 'recent', 'popular' or 'mixed'. Default is 'mixed'. Used only by Tweepy.")
 parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Default is 10. In the case of Tweepy, if greater API rate limit is reached, the program waits for 15 minutes before trying again.")
 parser.add_argument("--tweepy", action="store_true", default=False, dest="tweepy", help="Use Tweepy instead of the default Snscrape to download tweets.")
-args = parser.parse_args()
 
-validated_args = validate_args(args)
 
-# TODO: move write_config to utils
-if args.command == "configure":
-    write_config(args, validated_args)
-else:
-    # TODO: move write_config to sentiment.utils
-    if args.config is not None:
-        config, tweepy = read_config(args.config)
-        search = search_tweets_tweepy if tweepy else search_tweets_sn
-        tweets = search(**config)
+def main():
+    args = parser.parse_args()
+    validated_args = validate_args(args)
+    
+    if args.command == "configure":
+        write_config(args, validated_args)
     else:
-        search = search_tweets_tweepy if args.tweepy else search_tweets_sn
-        tweets = search(**validated_args)
-    if len(tweets) == 0:
-        raise Exception("The search returned no tweets. Please double check your query.")
-    if args.command == 'analyze':
-        # Load (or download, if not already done) required NLTK resources
-        load_nltk(args.analyzer)
+        if args.config is not None:
+            config, tweepy = read_config(args.config)
+            search = search_tweets_tweepy if tweepy else search_tweets_sn
+            tweets = search(**config)
+        else:
+            search = search_tweets_tweepy if args.tweepy else search_tweets_sn
+            tweets = search(**validated_args)
+        if len(tweets) == 0:
+            raise Exception("The search returned no tweets. Please double check your query.")
+        if args.command == 'analyze':
+            # Load (or download, if not already done) required NLTK resources
+            load_nltk(args.analyzer)
 
-        # Sentiment analysis
-        tweets.get_sentiment(method=args.analyzer)
-    if args.dest is None:
-        args.dest = './result.csv'
-    tweets.to_csv(args.dest)
+            # Sentiment analysis
+            tweets.get_sentiment(method=args.analyzer)
+        if args.dest is None:
+            args.dest = './result.csv'
+        tweets.to_csv(args.dest)
+
+
+if __name__ == '__main__':
+    main()
