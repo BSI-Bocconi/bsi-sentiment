@@ -1,8 +1,8 @@
 import argparse
 import json
 
-from sentiment.twitter import search_tweets_tweepy, search_tweets_sn
-from sentiment.utils import validate_args, load_nltk
+from .twitter import search_tweets_tweepy, search_tweets_sn
+from .utils import validate_args, load_nltk
 
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.")
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")

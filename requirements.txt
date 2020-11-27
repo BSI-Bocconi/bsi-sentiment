@@ -1,5 +1,6 @@
-snscrape==0.3.4
-textblob==0.15.3
-tweepy==3.9.0
-GetOldTweets3==0.0.11
-nltk==3.4.5
+nltk >= 3.4.5
+snscrape>=0.3.4
+textblob>=0.15.3
+tweepy>=3.9.0
+wheel>=0.35.1
+GetOldTweets3>=0.0.11
