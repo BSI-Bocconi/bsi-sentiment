@@ -19,6 +19,7 @@ setuptools.setup(
     url=__url__,
     packages=setuptools.find_packages(),
     python_requires='>=3.6',
+    setup_requires=['wheel'],
     install_requires=required,
     classifiers=[
         "Development Status :: 3 - Alpha",
