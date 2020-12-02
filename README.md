@@ -1,14 +1,22 @@
 # BSI Sentiment Analysis Pipeline
 
-CLI tool to download tweets and perform basic sentiment analysis on them.
+BSI Sentiment is Python library created at [BSI Bocconi](https://github.com/BSI-Bocconi) to donwload tweets and perform basic sentiment analysis on them.
 
-## Usage
+## Installation 
+
+BSI Sentiment can be installed using the `pip` package manager:
 
 ```console
-foo@bar:~$ bsi_sentiment -h
+foo@bar:~$ pip install bsi_sentiment --upgrade
+```
 
-usage: sentiment [-h] [-c CONFIG] [-q query] [-s SINCE] [-u UNTIL] [-n GEO] [-r RADIUS] [-l LANG] [--user username] [--result_type {recent,popular,mixed}] [--max_tweets MAX_TWEETS]
-                 [--tweepy]
+## CLI Usage
+
+```console
+foo@bar:~$ sentiment -h
+
+usage: sentiment [-h] [-c CONFIG] [-a ANALYZER] [-q query] [-s SINCE] [-u UNTIL] [-n GEO] [-r RADIUS] [-l LANG] [--user username] [--result_type {recent,popular,mixed}]
+                 [--max_tweets MAX_TWEETS] [--tweepy]
                  {analyze,configure,download} [dest]
 
 BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.
@@ -22,13 +30,15 @@ optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
                         Config file location. If action is 'analyze' or 'download', configuration file is read from here.
+  -a ANALYZER, --analyzer ANALYZER
+                        Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.
   -q query, --query query
                         A query text to be matched
   -s SINCE, --since SINCE
-                        A lower bound date (UTC) to restrict search. Default is 7 days before today. Used only by Snscrape.
+                        A lower bound date (UTC) to restrict search. Default is 7 days before --until. Used only by Snscrape.
   -u UNTIL, --until UNTIL
                         An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.
-  -n GEO, --geo GEO     Return only tweets by users from given geolocation. It must be a location name (e.g. 'Milan') if using Snscrape or a string of the form 'latitude,longitude' if
+  -g GEO, --geo GEO     Return only tweets by users from given geolocation. It must be a location name (e.g. 'Milan') if using Snscrape or a string of the form 'latitude,longitude' if
                         using Tweepy.
   -r RADIUS, --radius RADIUS
                         Must be used together with --geo. Return only tweets by users within a given radius from the selected location. It must be either in 'mi' or 'km' (e.g. '15km')
@@ -41,3 +51,38 @@ optional arguments:
                         trying again.
   --tweepy              Use Tweepy instead of the default Snscrape to download tweets.
 ```
+
+## Examples
+
+### As a CLI Tool
+
+```console
+foo@bar:~$ sentiment analyze ./results.csv --analyzer="vader" -q "us elections" --since="2020-08-01" --until="2020-11-30" --geo="New York" --radius="100km" -l "en" --max_tweets=100
+```
+
+### As a Python Library
+
+```python
+from bsi_sentiment.twitter import search_tweets_sn
+
+tweets = search_tweets_sn(
+  q="us elections",
+  since="2020-08-01",
+  until="2020-11-30",
+  near="New York",
+  radius="100km",
+  lang="en",
+  max_tweets=100
+)
+
+tweets.get_sentiment(method="vader")
+tweets.to_csv("./results.csv")
+```
+
+## Contributors
+
+The BSI members that contributed to this project are:
+* Stefano Cortinovis (PL)
+* Pietro Dominietto
+* Elio Scarci
+* Kasra Zamanian
