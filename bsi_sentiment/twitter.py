@@ -369,7 +369,7 @@ def search_tweets_sn(q,
     if username is not None:
         criteria += f" from:{username}"
     if near is not None:
-        criteria += f" near:{near}"
+        criteria += f" near:{near.replace(' ', '&')}"
     if radius is not None:
         criteria += f" within:{criteria}"
     if lang is not None:
