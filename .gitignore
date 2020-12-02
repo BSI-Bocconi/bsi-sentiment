@@ -144,7 +144,7 @@ config*
 *.csv*
 # config files
 *.ini
-*.json
+config/
 # vs code config files
 *.vscode
 
