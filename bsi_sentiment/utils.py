@@ -11,9 +11,19 @@ FLOAT_REGEX = "[+-]?([0-9]*[.])?[0-9]+"
 ISO_REGEX = "^[a-z]{2}$"
 RADIUS_REGEX = "^[0-9]+(km|mi)$"
 
-# TODO: add docstrings
 
 def validate_common(args):
+    """
+    Validate CLI arguments common to both Tweepy and Snscrape.
+
+    Parameters
+    ----------
+    args (argparse.Namespace): arguments passed by the user through the command line.
+
+    Returns
+    -------
+    validated_args (dict): validated arguments.
+    """
     if args.until is not None:
         try:
             dt.strptime(args.until, DATE_FORMAT)
@@ -37,6 +47,18 @@ def validate_common(args):
 
 
 def validate_snscrape(args, validated_args):
+    """
+    Validate CLI arguments specific to Snscrape.
+
+    Parameters
+    ----------
+    args (argparse.Namespace): arguments passed by the user through the command line.
+    validated_args (dict): dict containing the arguments already validated by validate_common().
+
+    Returns
+    -------
+    validated_args (dict): validated arguments.
+    """
     if args.since is not None:
         try:
             dt.strptime(args.since, DATE_FORMAT)
@@ -54,6 +76,18 @@ def validate_snscrape(args, validated_args):
 
 
 def validate_tweepy(args, validated_args):
+    """
+    Validate CLI arguments specific to Snscrape.
+
+    Parameters
+    ----------
+    args (argparse.Namespace): arguments passed by the user through the command line.
+    validated_args (dict): dict containing the arguments already validated by validate_common().
+
+    Returns
+    -------
+    validated_args (dict): validated arguments.
+    """
     if args.geo is not None and re.match(f"^{FLOAT_REGEX},{FLOAT_REGEX}$", args.geo) is None:
         raise ValueError(
             f"geo must have the form 'latitude,longitude' for tweepy, got {args.geo}")
@@ -69,6 +103,17 @@ def validate_tweepy(args, validated_args):
 
 
 def validate_args(args):
+    """
+    Validate CLI arguments.
+
+    Parameters
+    ----------
+    args (argparse.Namespace): arguments passed by the user through the command line.
+
+    Returns
+    -------
+    validated_args (dict): validated arguments.
+    """
     validated_args = validate_common(args)
     if args.tweepy:
         return validate_tweepy(args, validated_args)
@@ -76,6 +121,13 @@ def validate_args(args):
 
 
 def load_nltk(analyzer):
+    """
+    Check if resources necessary to use 'analyzer' are already present locally. Else, download them.
+
+    Parameters
+    ----------
+    analyzer (str): method to use for sentiment analysis.
+    """
     if analyzer == 'textblob-nb':
         try:
             data.find('corpora/movie_reviews')
@@ -93,7 +145,18 @@ def load_nltk(analyzer):
 
 
 def read_config(config_path):
+    """
+    Read configuration file containing parameters of twitter search query and analysis.
+
+    Parameters:
+    config_path (Union[str, pathlib.Path]): path of configuration file.
+
+    Returns:
+    validated_args (dict): validated arguments for twitter search and tweet analysis.
+    tweepy (bool): whether to use Tweepy instead of Snscrape to download tweets.
+    """
     config = configparser.ConfigParser()
+    config.read()
     config.read(config_path)
     validated_args = config._sections['bsi-sentiment']
     validated_args['max_tweets'] = config['bsi-sentiment'].getint('max_tweets')
@@ -101,7 +164,17 @@ def read_config(config_path):
     del validated_args['tweepy'] 
     return validated_args, tweepy
 
+
 def write_config(args, validated_args):
+    """
+    Write configuration file containing parameters of twitter search query and analysis to args.dest.
+
+    Parameters
+    ----------
+    args (argparse.Namespace): arguments passed by the user through the command line.
+    validated_args (dict): validated arguments for twitter search and tweet analysis.
+    """
+    validated_args (dict): dict containing the arguments already validated by validate_common().
     config = configparser.ConfigParser()
     config['bsi-sentiment'] = {argname: str(argval) for argname, argval in validated_args.items() if argval is not None}
     config['bsi-sentiment']['tweepy'] = str(args.tweepy)
