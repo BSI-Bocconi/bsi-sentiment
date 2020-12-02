@@ -1,5 +1,4 @@
 import configparser
-import json
 import re
 from datetime import datetime as dt
 from datetime import timedelta as td
@@ -69,7 +68,7 @@ def validate_snscrape(args, validated_args):
             raise ValueError(
                 f"since can be at most {dt.strftime(dt.today() - td.timedelta(days=1), '%Y-%m-%d')}, got {args.since}")
         if dt.strptime(args.since, DATE_FORMAT) >= dt.strptime(args.until, DATE_FORMAT):
-            raise ValueError(f"since must strictly precede until")
+            raise ValueError("since must strictly precede until")
     validated_args["since"] = args.since
     validated_args["near"] = args.geo
     return validated_args
@@ -93,7 +92,7 @@ def validate_tweepy(args, validated_args):
             f"geo must have the form 'latitude,longitude' for tweepy, got {args.geo}")
     elif (args.geo is not None and args.radius is None) or (args.geo is None and args.radius is not None):
         raise ValueError(
-            f"If using Tweepy with geolocation, both --geo and --radius must be specified")
+            "If using Tweepy with geolocation, both --geo and --radius must be specified")
     elif args.geo is not None and args.radius is not None:
         validated_args["geocode"] = ','.join([args.geo, args.radius])
     if args.lang is not None and re.match(ISO_REGEX, args.lang) is None:
@@ -138,7 +137,7 @@ def load_nltk(analyzer):
         try:
             data.find('tokenizers/punkt')
         except LookupError:
-            download('punkt') 
+            download('punkt')
     elif analyzer == 'vader':
         try:
             data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
@@ -162,7 +161,7 @@ def read_config(config_path):
     validated_args = config._sections['bsi-sentiment']
     validated_args['max_tweets'] = config['bsi-sentiment'].getint('max_tweets')
     tweepy = config['bsi-sentiment'].getboolean('tweepy')
-    del validated_args['tweepy'] 
+    del validated_args['tweepy']
     return validated_args, tweepy
 
 

@@ -108,7 +108,7 @@ class NLPTweet:
             - 'vader'(default): Give a sentiment intensity score to sentences, according to VADER sentiment analysis tool. Metrics stored are 'polarity', 'pos_w', 'neu_w', 'neg_w'.
             - 'textblob-pa': Uses PatternAnalyzer from textblob to compute 'polarity' (in range [-1.0, 1.0]) and 'subjectivity' (in range [0.0,1.0]).
             - 'textblob-nb': Uses NaiveBayesAnalyzer from textblob to classify the sentiment. Computes also 'p_pos' and 'p_neg', as probabilities.
-        """        
+        """       
         processed_text = re.sub(
             r'(#)|(^RT[\s]+)|(https?:\S+)|(@[A-Za-z0-9_]+)', '', self.text)
         # select method chosen
@@ -118,7 +118,7 @@ class NLPTweet:
             self.subjectivity = processed_text.sentiment.subjectivity
         elif method == "textblob-nb":
             processed_text = TextBlob(processed_text, analyzer=NaiveBayesAnalyzer())
-            self.classification = processed_text.sentiment.classification 
+            self.classification = processed_text.sentiment.classification
             self.p_pos = processed_text.sentiment.p_pos
             self.p_neg = processed_text.sentiment.p_neg
         elif method == "vader":
@@ -283,6 +283,7 @@ def search_tweets_tweepy(q,
         tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
     return tweets
 
+
 # not working atm: https://github.com/Mottl/GetOldTweets3/issues/98
 def search_tweets_got(q,
                       since=None,
@@ -293,7 +294,7 @@ def search_tweets_got(q,
                       only_top=False,
                       max_tweets=-1):
     """
-    Search tweets according to keyword arguments specified using GetOldTweets3. 
+    Search tweets according to keyword arguments specified using GetOldTweets3.
 
     Parameters
     ----------
@@ -342,7 +343,7 @@ def search_tweets_sn(q,
                      lang=None,
                      max_tweets=-1):
     """
-    Search tweets according to keyword arguments specified using snscrape. 
+    Search tweets according to keyword arguments specified using snscrape.
 
     Parameters
     ----------

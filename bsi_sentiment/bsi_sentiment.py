@@ -2,6 +2,7 @@ from .parser import parser
 from .twitter import search_tweets_tweepy, search_tweets_sn
 from .utils import validate_args, load_nltk, read_config, write_config
 
+
 def main():
     args = parser.parse_args()
     validated_args = validate_args(args)
