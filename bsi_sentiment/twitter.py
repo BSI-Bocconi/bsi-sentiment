@@ -206,17 +206,19 @@ class NLPTweetList:
                 writer.writerow([tweet[col] for col in columns])
 
 
-# TODO: add --credential options to parser
-def authenticate_tweepy():
+def authenticate_tweepy(credentials_path):
     """
     Authenticates to Twitter API using keys stored at ./config/credentials.json
+
+    Parameters
+    ----------
+    credentials_path (str): Path to JSON file containing Tweepy credentials. See examples/credentials.json to see how the file should be formatted.
 
     Returns
     -------
     api (tweepy.API): Authenticated instance of tweepy.API
     """
-    credentials_path = Path('./config/credentials.json')
-    with credentials_path.open() as f:
+    with open(credentials_path) as f:
         credentials = json.load(f)
     auth = tw.OAuthHandler(
         credentials['api_key'], credentials['api_key_secret'])
@@ -245,7 +247,8 @@ def search_tweets_tweepy(q,
                          geocode=None,
                          lang=None,
                          result_type='mixed',
-                         max_tweets=10):
+                         max_tweets=10,
+                         credentials_path='./credentials.json'):
     """
     Search tweets according to keyword arguments specified using Tweepy.
 
@@ -275,7 +278,7 @@ def search_tweets_tweepy(q,
     if lang is not None:
         search_args['lang'] = lang
 
-    api = authenticate_tweepy()
+    api = authenticate_tweepy(credentials_path)
     tweets = NLPTweetList(limit_handler(
         tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
     return tweets

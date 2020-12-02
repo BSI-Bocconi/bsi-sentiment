@@ -91,14 +91,16 @@ def validate_tweepy(args, validated_args):
     if args.geo is not None and re.match(f"^{FLOAT_REGEX},{FLOAT_REGEX}$", args.geo) is None:
         raise ValueError(
             f"geo must have the form 'latitude,longitude' for tweepy, got {args.geo}")
-    elif args.geo is not None and args.radius is None:
+    elif (args.geo is not None and args.radius is None) or (args.geo is None and args.radius is not None):
         raise ValueError(
             f"If using Tweepy with geolocation, both --geo and --radius must be specified")
+    elif args.geo is not None and args.radius is not None:
+        validated_args["geocode"] = ','.join([args.geo, args.radius])
     if args.lang is not None and re.match(ISO_REGEX, args.lang) is None:
         raise ValueError(f"lang must be an ISO 639-1 code, got {args.lang}")
-    validated_args["geocode"] = ','.join([args.geo, args.radius])
     validated_args["lang"] = args.lang
     validated_args["result_type"] = args.result_type
+    validated_args["credentials_path"] = args.credentials
     return validated_args
 
 
@@ -174,7 +176,6 @@ def write_config(args, validated_args):
     args (argparse.Namespace): arguments passed by the user through the command line.
     validated_args (dict): validated arguments for twitter search and tweet analysis.
     """
-    validated_args (dict): dict containing the arguments already validated by validate_common().
     config = configparser.ConfigParser()
     config['bsi-sentiment'] = {argname: str(argval) for argname, argval in validated_args.items() if argval is not None}
     config['bsi-sentiment']['tweepy'] = str(args.tweepy)

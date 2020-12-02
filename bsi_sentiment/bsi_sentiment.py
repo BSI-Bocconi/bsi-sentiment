@@ -10,7 +10,7 @@ parser.add_argument("command", type=str, choices=["analyze", "configure", "downl
 parser.add_argument("dest", type=str, nargs="?", help="Output file location. Analysis/configuration/download output file is stored here. Default is current directory.")
 parser.add_argument("-c", "--config", type=str, help="Config file location. If action is 'analyze' or 'download', configuration file is read from here.")
 # TODO: allow user to specify more than one analyzer at the same time
-parser.add_argument("-a", "--analyzer", type=str, default='vader', metavar="ANALYZER", choices=["vader","textblob-pa","textblob-nb"], help="Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.")
+parser.add_argument("-a", "--analyzer", type=str, default='vader', metavar="analyzer", choices=["vader","textblob-pa","textblob-nb"], help="Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.")
 parser.add_argument("-q", "--query", type=str, default="", metavar="query", dest="q", help="A query text to be matched")
 parser.add_argument("-s", "--since", type=str, help="A lower bound date (UTC) to restrict search. Default is 7 days before --until. Used only by Snscrape.")
 parser.add_argument("-u", "--until", type=str, help="An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.")
@@ -21,7 +21,7 @@ parser.add_argument("--user", type=str, metavar="username", dest="username", hel
 parser.add_argument("--result_type", type=str, default="mixed", choices=["recent", "popular", "mixed"], help="Type of tweets to retrieve. Can be either 'recent', 'popular' or 'mixed'. Default is 'mixed'. Used only by Tweepy.")
 parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Default is 10. In the case of Tweepy, if greater API rate limit is reached, the program waits for 15 minutes before trying again.")
 parser.add_argument("--tweepy", action="store_true", default=False, dest="tweepy", help="Use Tweepy instead of the default Snscrape to download tweets.")
-
+parser.add_argument("--credentials", type=str, default='./credentials.json', help="Path to JSON file containing Tweepy credentials. See examples/credentials.json to see how the file should be formatted.")
 
 def main():
     args = parser.parse_args()
