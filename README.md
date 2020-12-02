@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/fastai/fastai/workflows/CI/badge.svg) [![PyPI](https://img.shields.io/pypi/v/bsi-sentiment?color=blue&label=pypi%20version)](https://pypi.org/project/bsi-sentiment/#description) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-BSI Sentiment is Python library created at [BSI Bocconi](https://github.com/BSI-Bocconi) to download tweets and perform basic sentiment analysis on them.
+BSI Sentiment is a Python library created at [BSI Bocconi](https://github.com/BSI-Bocconi) to download tweets and perform basic sentiment analysis on them.
 
 ## Installation 
 
