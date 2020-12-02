@@ -7,7 +7,7 @@ BSI Sentiment is Python library created at [BSI Bocconi](https://github.com/BSI-
 BSI Sentiment can be installed using the `pip` package manager:
 
 ```console
-foo@bar:~$ pip install bsi_sentiment --upgrade
+foo@bar:~$ pip install bsi-sentiment --upgrade
 ```
 
 ## CLI Usage
@@ -82,7 +82,7 @@ tweets.to_csv("./results.csv")
 ## Contributors
 
 The BSI members that contributed to this project are:
-* Stefano Cortinovis (PL)
-* Pietro Dominietto
-* Elio Scarci
-* Kasra Zamanian
+* [Stefano Cortinovis](https://github.com/scortino) (PL)
+* [Pietro Dominietto](https://github.com/PietroDomi)
+* [Elio Scarci](https://github.com/eliox98)
+* [Kasra Zamanian](https://github.com/kasrazn97)
