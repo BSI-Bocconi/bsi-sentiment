@@ -1,6 +1,6 @@
 # BSI Sentiment Analysis Pipeline
 
-BSI Sentiment is Python library created at [BSI Bocconi](https://github.com/BSI-Bocconi) to donwload tweets and perform basic sentiment analysis on them.
+BSI Sentiment is Python library created at [BSI Bocconi](https://github.com/BSI-Bocconi) to download tweets and perform basic sentiment analysis on them.
 
 ## Installation 
 
