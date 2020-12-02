@@ -158,7 +158,6 @@ def read_config(config_path):
     tweepy (bool): whether to use Tweepy instead of Snscrape to download tweets.
     """
     config = configparser.ConfigParser()
-    config.read()
     config.read(config_path)
     validated_args = config._sections['bsi-sentiment']
     validated_args['max_tweets'] = config['bsi-sentiment'].getint('max_tweets')
