@@ -371,7 +371,7 @@ def search_tweets_sn(q,
     if near is not None:
         criteria += f" near:{near.replace(' ', '&')}"
     if radius is not None:
-        criteria += f" within:{criteria}"
+        criteria += f" within:{radius}"
     if lang is not None:
         criteria += f" lang:{lang}"
 
