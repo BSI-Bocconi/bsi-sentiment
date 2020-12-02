@@ -46,7 +46,7 @@ def validate_snscrape(args, validated_args):
         if dt.strptime(args.since, DATE_FORMAT) >= dt.today():
             raise ValueError(
                 f"since can be at most {dt.strftime(dt.today() - td.timedelta(days=1), '%Y-%m-%d')}, got {args.since}")
-        if dt.strptime(args.since, DATE_FORMAT) >= args.until:
+        if dt.strptime(args.since, DATE_FORMAT) >= dt.strptime(args.until, DATE_FORMAT):
             raise ValueError(f"since must strictly precede until")
     validated_args["since"] = args.since
     validated_args["near"] = args.geo
