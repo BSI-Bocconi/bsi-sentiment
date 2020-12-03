@@ -19,14 +19,11 @@ def main():
         if len(tweets) == 0:
             raise Exception("The search returned no tweets. Please double check your query.")
         if args.command == 'analyze':
-            # Load (or download, if not already done) required NLTK resources
-            load_nltk(args.analyzer)
-
-            # Sentiment analysis
-            tweets.get_sentiment(method=args.analyzer)
+            load_nltk(args.analyzer, quiet=args.quiet)
+            tweets.get_sentiment(method=args.analyzer, quiet=args.quiet)
         if args.dest is None:
             args.dest = './result.csv'
-        tweets.to_csv(args.dest)
+        tweets.to_csv(args.dest, quiet=args.quiet)
 
 
 if __name__ == '__main__':

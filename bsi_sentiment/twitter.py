@@ -15,6 +15,7 @@ import tweepy as tw
 from textblob import TextBlob
 from textblob.sentiments import NaiveBayesAnalyzer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from tqdm import tqdm
 
 
 class NLPTweet:
@@ -139,11 +140,12 @@ class NLPTweetList:
     tweets (Iterable[Union[GetOldTweets3.models.Tweet, tweepy.models.Status]])
     """
 
-    def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status, sntwitter.Tweet]]):
+    def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status, sntwitter.Tweet]], quiet=False, tqdm_total=None):
         if not isinstance(tweets, Iterable):
             raise TypeError(
                 f"tweets must be an Iterable containing instances of either got.models.Tweet or tweepy.models.Status, got '{type(tweets).__name__}'")
-        self.tweets = list(map(NLPTweet, tweets))
+        self.tweets = list(map(NLPTweet, tqdm(tweets, desc="Downloading tweets", total=tqdm_total, disable=quiet)))
+        
 
     def __getitem__(self, i):
         return self.tweets[i]
@@ -155,8 +157,8 @@ class NLPTweetList:
         for tweet in self.tweets:
             yield tweet
 
-    def get_sentiment(self, method):
-        for tweet in self:
+    def get_sentiment(self, method, quiet=False):
+        for tweet in tqdm(self,  desc="Analyzing tweets  ", disable=quiet):
             tweet.get_sentiment(method)
 
     @staticmethod
@@ -185,7 +187,7 @@ class NLPTweetList:
                 dict(zip(columns, [x if x != '' else None for x in row]))), reader))
         return tweets
 
-    def to_csv(self, path: Union[str, Path], columns: List[str] = None, delimiter=','):
+    def to_csv(self, path: Union[str, Path], columns: List[str] = None, delimiter=',', quiet=False):
         if not isinstance(path, (str, Path)):
             raise TypeError(
                 f"path must be of type Union[str, Path], got '{type(path).__name__}'")
@@ -202,7 +204,7 @@ class NLPTweetList:
         with path.open('w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f, delimiter=delimiter)
             writer.writerow(columns)
-            for tweet in self:
+            for tweet in tqdm(self, desc="Writing tweets    ",  disable=quiet):
                 writer.writerow([tweet[col] for col in columns])
 
 
@@ -248,7 +250,8 @@ def search_tweets_tweepy(q,
                          lang=None,
                          result_type='mixed',
                          max_tweets=10,
-                         credentials_path='./credentials.json'):
+                         credentials_path='./credentials.json',
+                         quiet=False):
     """
     Search tweets according to keyword arguments specified using Tweepy.
 
@@ -280,7 +283,9 @@ def search_tweets_tweepy(q,
 
     api = authenticate_tweepy(credentials_path)
     tweets = NLPTweetList(limit_handler(
-        tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)))
+        tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)),
+        tqdm_total=max_tweets,
+        quiet=quiet)
     return tweets
 
 
@@ -341,7 +346,8 @@ def search_tweets_sn(q,
                      near=None,
                      radius=None,
                      lang=None,
-                     max_tweets=-1):
+                     max_tweets=-1,
+                     quiet=False):
     """
     Search tweets according to keyword arguments specified using snscrape.
 
@@ -380,5 +386,8 @@ def search_tweets_sn(q,
         criteria += f" lang:{lang}"
 
     tweets = NLPTweetList(
-        islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets))
+        islice(sntwitter.TwitterSearchScraper(criteria).get_items(), max_tweets), 
+        tqdm_total=max_tweets,
+        quiet=quiet
+    )
     return tweets

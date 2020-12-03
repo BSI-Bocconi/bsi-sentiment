@@ -1,7 +1,6 @@
 import argparse
 
 
-# TODO: improve argument parser using getopts
 parser = argparse.ArgumentParser(description="BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape (default) or Tweepy.")
 parser.add_argument("command", type=str, choices=["analyze", "configure", "download"], help="Action to perform.")
 parser.add_argument("dest", type=str, nargs="?", metavar="DEST", help="Output file location. Analysis/configuration/download output file is stored here. Default is current directory.")
@@ -19,3 +18,4 @@ parser.add_argument("--result_type", type=str, default="mixed", choices=["recent
 parser.add_argument("--max_tweets", type=int, default=10, help="The maximum number of tweets to be retrieved. Default is 10. In the case of Tweepy, if greater API rate limit is reached, the program waits for 15 minutes before trying again.")
 parser.add_argument("--tweepy", action="store_true", default=False, dest="tweepy", help="Use Tweepy instead of the default Snscrape to download tweets.")
 parser.add_argument("--credentials", type=str, default='./credentials.json', help="Path to JSON file containing Tweepy credentials. See examples/credentials.json to see how the file should be formatted.")
+parser.add_argument("--quiet", action="store_true", default=False, help="No stdout output when downloading or analyzing tweets. Default is verbose.")

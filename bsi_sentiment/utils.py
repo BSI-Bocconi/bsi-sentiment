@@ -42,6 +42,7 @@ def validate_common(args):
     validated_args["q"] = args.q  # can be any string
     validated_args["until"] = args.until
     validated_args["max_tweets"] = args.max_tweets
+    validated_args["quiet"] = args.quiet
     return validated_args
 
 
@@ -121,7 +122,7 @@ def validate_args(args):
     return validate_snscrape(args, validated_args)
 
 
-def load_nltk(analyzer):
+def load_nltk(analyzer, quiet=False):
     """
     Check if resources necessary to use 'analyzer' are already present locally. Else, download them.
 
@@ -133,16 +134,16 @@ def load_nltk(analyzer):
         try:
             data.find('corpora/movie_reviews')
         except LookupError:
-            download('movie_reviews')
+            download('movie_reviews', quiet=quiet)
         try:
             data.find('tokenizers/punkt')
         except LookupError:
-            download('punkt')
+            download('punkt', quiet=quiet)
     elif analyzer == 'vader':
         try:
             data.find("sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt")
         except LookupError:
-            download('vader_lexicon')
+            download('vader_lexicon', quiet=quiet)
 
 
 def read_config(config_path):
