@@ -8,6 +8,8 @@ from itertools import islice
 from pathlib import Path
 from typing import Iterable, List, Union
 
+from .utils import load_nltk
+
 import GetOldTweets3 as got
 import snscrape.modules.twitter as sntwitter
 import tweepy as tw
@@ -99,7 +101,7 @@ class NLPTweet:
         tweet.__dict__ = d.copy()
         return tweet
 
-    def get_sentiment(self, method):
+    def get_sentiment(self, method="vader"):
         """
         Extract sentiment expressed by self.text. Multiple sentiment analysis methods available. Default is 'vader'.
 
@@ -157,7 +159,8 @@ class NLPTweetList:
         for tweet in self.tweets:
             yield tweet
 
-    def get_sentiment(self, method, quiet=False):
+    def get_sentiment(self, method="vader", quiet=False):
+        load_nltk(method, quiet=quiet)
         for tweet in tqdm(self,  desc="Analyzing tweets  ", disable=quiet):
             tweet.get_sentiment(method)
 

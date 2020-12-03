@@ -1,6 +1,6 @@
 from .parser import parser
 from .twitter import search_tweets_tweepy, search_tweets_sn
-from .utils import validate_args, load_nltk, read_config, write_config
+from .utils import validate_args, read_config, write_config
 
 
 def main():
@@ -19,7 +19,6 @@ def main():
         if len(tweets) == 0:
             raise Exception("The search returned no tweets. Please double check your query.")
         if args.command == 'analyze':
-            load_nltk(args.analyzer, quiet=args.quiet)
             tweets.get_sentiment(method=args.analyzer, quiet=args.quiet)
         if args.dest is None:
             args.dest = './result.csv'
