@@ -17,16 +17,16 @@ foo@bar:~$ pip install bsi-sentiment --upgrade
 ```console
 foo@bar:~$ sentiment -h
 
-usage: sentiment [-h] [-c CONFIG] [-a ANALYZER] [-q query] [-s SINCE] [-u UNTIL] [-n GEO] [-r RADIUS] [-l LANG] [--user username] [--result_type {recent,popular,mixed}]
-                 [--max_tweets MAX_TWEETS] [--tweepy]
-                 {analyze,configure,download} [dest]
+usage: sentiment [-h] [-c CONFIG] [-a ANALYZER] [-q QUERY] [-s SINCE] [-u UNTIL] [-g GEO] [-r RADIUS] [-l LANG] [--user USERNAME] [--result_type {recent,popular,mixed}] [--max_tweets MAX_TWEETS] [--tweepy] [--credentials CREDENTIALS]
+                 [--quiet]
+                 {analyze,configure,download} [DEST]
 
-BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape(default) or Tweepy.
+BSI Tool for Sentiment Analysis. Tweets can be downloaded using either Snscrape (default) or Tweepy.
 
 positional arguments:
   {analyze,configure,download}
                         Action to perform.
-  dest                  Output file location. Analysis/configuration/download output file is stored here. Default is current directory.
+  DEST                  Output file location. Analysis/configuration/download output file is stored here. Default is current directory.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -34,24 +34,25 @@ optional arguments:
                         Config file location. If action is 'analyze' or 'download', configuration file is read from here.
   -a ANALYZER, --analyzer ANALYZER
                         Analyzer method for sentiment analysis. Available options are {'vader','textblob-pa','textblob-nb'}. Default is 'vader'.
-  -q query, --query query
+  -q QUERY, --query QUERY
                         A query text to be matched
   -s SINCE, --since SINCE
                         A lower bound date (UTC) to restrict search. Default is 7 days before --until. Used only by Snscrape.
   -u UNTIL, --until UNTIL
                         An upper bound date (not included) to restrict search. Default is today. Tweepy has a 7 day hard limit, while Snscrape has no such limit.
-  -g GEO, --geo GEO     Return only tweets by users from given geolocation. It must be a location name (e.g. 'Milan') if using Snscrape or a string of the form 'latitude,longitude' if
-                        using Tweepy.
+  -g GEO, --geo GEO     Return only tweets by users from given geolocation. It must be a location name (e.g. 'Milan') if using Snscrape or a string of the form 'latitude,longitude' if using Tweepy.
   -r RADIUS, --radius RADIUS
                         Must be used together with --geo. Return only tweets by users within a given radius from the selected location. It must be either in 'mi' or 'km' (e.g. '15km')
   -l LANG, --lang LANG  Restrict language of the tweets retrieved. Must be an ISO 639-1 code (e.g. en, it, etc.). Default is no language restriction. Used only by Tweepy.
-  --user username       Restrict search to tweets from specified username.
+  --user USERNAME       Restrict search to tweets from specified username.
   --result_type {recent,popular,mixed}
                         Type of tweets to retrieve. Can be either 'recent', 'popular' or 'mixed'. Default is 'mixed'. Used only by Tweepy.
   --max_tweets MAX_TWEETS
-                        The maximum number of tweets to be retrieved. Default is 10. In the case of Tweepy, if greater API rate limit is reached, the program waits for 15 minutes before
-                        trying again.
+                        The maximum number of tweets to be retrieved. Default is 10. In the case of Tweepy, if greater API rate limit is reached, the program waits for 15 minutes before trying again.
   --tweepy              Use Tweepy instead of the default Snscrape to download tweets.
+  --credentials CREDENTIALS
+                        Path to JSON file containing Tweepy credentials. See examples/credentials.json to see how the file should be formatted.
+  --quiet               No stdout output when downloading or analyzing tweets. Default is verbose.
 ```
 
 ## Examples
