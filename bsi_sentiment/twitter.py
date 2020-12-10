@@ -10,7 +10,6 @@ from typing import Iterable, List, Union
 
 from .utils import load_nltk
 
-import GetOldTweets3 as got
 import snscrape.modules.twitter as sntwitter
 import tweepy as tw
 
@@ -22,13 +21,13 @@ from tqdm import tqdm
 
 class NLPTweet:
     """
-    Base class that adds NLP methods to GetOldTweets3.models.Tweet and tweepy.models.Status.
+    Base class that adds NLP methods to tweepy.models.Status and sntwitter.Tweet.
     This class shouldn't normally be instantiated on its own, but rather by passing the list of tweets
-    returned by got.manager.TweetManager.getTweets to NLPTweetList.
+    returned by search_tweets_tweepy or search_tweets_sn to NLPTweetList.
 
     Parameters
     ----------
-    tweet (Union[GetOldTweets3.models.Tweet, tweepy.models.Status])
+    tweet (Union[tweepy.models.Status, sntwitter.Tweet])
 
     Attributes
     ----------
@@ -45,19 +44,11 @@ class NLPTweet:
     geo (str)
     sentiment -> update description once method implemented
     """
-    DEFAULT_ATTRIBUTES = ['id', 'permalink', 'username', 'to', 'text', 'date',
-                          'retweets', 'favorites', 'mentions', 'hashtags', 'geo', 'polarity', 'subjectivity']
-
-    def __init__(self, tweet: Union[None, got.models.Tweet, tw.models.Status, sntwitter.Tweet] = None):
-        if isinstance(tweet, got.models.Tweet):
-            self._from_got(tweet)
-        elif isinstance(tweet, tw.models.Status):
+    def __init__(self, tweet: Union[None, tw.models.Status, sntwitter.Tweet] = None):
+        if isinstance(tweet, tw.models.Status):
             self._from_tweepy(tweet)
         elif isinstance(tweet, sntwitter.Tweet):
             self._from_sn(tweet)
-
-    def _from_got(self, tweet):
-        self.__dict__ = tweet.__dict__.copy()
 
     def _from_tweepy(self, tweet):
         self.id = tweet.id_str
@@ -135,17 +126,17 @@ class NLPTweet:
 
 class NLPTweetList:
     """
-    Add NLP methods to the list of tweets returned by GetOldTweets3.manager.TweetManager.getTweets.
+    Add NLP methods to the list of tweets returned by search_tweets_tweepy or search_tweets_sn.
 
     Parameters
     ----------
-    tweets (Iterable[Union[GetOldTweets3.models.Tweet, tweepy.models.Status]])
+    tweets (Iterable[Union[tweepy.models.Status, sntwitter.Tweet]])
     """
 
-    def __init__(self, tweets: Iterable[Union[got.models.Tweet, tw.models.Status, sntwitter.Tweet]], quiet=False, tqdm_total=None):
+    def __init__(self, tweets: Iterable[Union[tw.models.Status, sntwitter.Tweet]], quiet=False, tqdm_total=None):
         if not isinstance(tweets, Iterable):
             raise TypeError(
-                f"tweets must be an Iterable containing instances of either got.models.Tweet or tweepy.models.Status, got '{type(tweets).__name__}'")
+                f"tweets must be an Iterable containing instances of either tweepy.models.Status or sntwitter.Tweet, got '{type(tweets).__name__}'")
         self.tweets = list(map(NLPTweet, tqdm(tweets, desc="Downloading tweets", total=tqdm_total, disable=quiet)))
         
 
@@ -165,7 +156,7 @@ class NLPTweetList:
             tweet.get_sentiment(method)
 
     @staticmethod
-    def from_csv(path: Union[str, Path], delimiter=',', validate_columns=True):
+    def from_csv(path: Union[str, Path], delimiter=','):
         if not isinstance(path, (str, Path)):
             raise TypeError(
                 f"path must be of type Union[str, Path], got '{type(path).__name__}'")
@@ -179,13 +170,6 @@ class NLPTweetList:
         with path.open(newline='') as f:
             reader = csv.reader(f, delimiter=delimiter)
             columns = next(reader)
-            if validate_columns:
-                for col in columns:
-                    try:
-                        assert col in NLPTweet.DEFAULT_ATTRIBUTES
-                    except AssertionError:
-                        raise KeyError(
-                            f"column '{col}' is not a valid NLPTweet attribute")
             tweets = list(map(lambda row: NLPTweet.from_dict(
                 dict(zip(columns, [x if x != '' else None for x in row]))), reader))
         return tweets
@@ -289,56 +273,6 @@ def search_tweets_tweepy(q,
         tw.Cursor(api.search, **search_args, tweet_mode='extended').items(max_tweets)),
         tqdm_total=max_tweets,
         quiet=quiet)
-    return tweets
-
-
-# not working atm: https://github.com/Mottl/GetOldTweets3/issues/98
-def search_tweets_got(q,
-                      since=None,
-                      until=None,
-                      username=None,
-                      near=None,
-                      radius=None,
-                      only_top=False,
-                      max_tweets=-1):
-    """
-    Search tweets according to keyword arguments specified using GetOldTweets3.
-
-    Parameters
-    ----------
-    q (str): A query text to be matched.
-    since (str. "yyyy-mm-dd"): A lower bound date (UTC) to restrict search. Default is 7 days before today.
-    until (str. "yyyy-mm-dd"): An upper bound date (not included) to restrict search. Default is today.
-    username (str or iterable): An optional specific username(s) from a twitter account (with or without "@"). Default is no username restriction.
-    near (str): A reference location area (e.g. Milan) from where tweets were generated. Default is no reference area.
-    radius (str): A distance radius (e.g. 15km) from location specified by "near". Meaningful only if "near" is set.
-    only_top (bool): If True only the Top Tweets will be retrieved. Default is False.
-    max_tweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved. Default is -1.
-
-    Returns
-    -------
-    tweets (NLPTweetList): list of tweets resulting from the search and amenable to analysis.
-    """
-    if until is None:
-        until = datetime.datetime.strftime(datetime.date.today(), '%Y-%m-%d')
-    if since is None:
-        since = datetime.datetime.strftime(
-            datetime.datetime.strptime(until, '%Y-%m-%d') - datetime.timedelta(days=7), '%Y-%m-%d')
-
-    criteria = (got.manager.TweetCriteria().setQuerySearch(q)
-                                           .setSince(since)
-                                           .setUntil(until)
-                                           .setTopTweets(only_top)
-                                           .setMaxTweets(max_tweets))
-
-    if username is not None:
-        criteria = criteria.setUsername(username)
-    if near is not None:
-        criteria = criteria.setNear(near)
-        if radius is not None:
-            criteria = criteria.setWithin(radius)
-
-    tweets = NLPTweetList(got.manager.TweetManager().getTweets(criteria))
     return tweets
 
 
