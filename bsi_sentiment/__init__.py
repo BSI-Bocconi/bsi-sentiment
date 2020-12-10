@@ -1,5 +1,5 @@
 __title__ = 'bsi_sentiment'
 __author__ = 'Stefano Cortinovis, Pietro Domietto, Elio Scarci, Kasra Zamanian'
 __email__ = 'scortino@pm.me'
-__url__ = 'https://github.com/scortino/bsi-sentiment'
+__url__ = 'https://github.com/BSI-Bocconi/bsi-sentiment'
 __version__ = '0.0.4'
