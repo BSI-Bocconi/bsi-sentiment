@@ -1,6 +1,6 @@
 # BSI Sentiment Analysis Pipeline
 
-![CI](https://github.com/fastai/fastai/workflows/CI/badge.svg) 
+![CI](https://github.com/bsi-bocconi/bsi-sentiment/workflows/CI/badge.svg) 
 [![PyPI](https://img.shields.io/pypi/v/bsi-sentiment?color=blue&label=pypi%20version)](https://pypi.org/project/bsi-sentiment/#description)
 [![PyPi Downloads](http://pepy.tech/badge/bsi-sentiment)](http://pepy.tech/project/bsi-sentiment)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg)](https://www.gnu.org/licenses/gpl-3.0)
