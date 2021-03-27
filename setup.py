@@ -6,7 +6,7 @@ with open("README.md") as f:
     long_description = f.read()
 
 with open("requirements.txt") as f:
-    required = f.readlines()
+    required = f.readlines()[:-2]
 
 setuptools.setup(
     name=__title__,
@@ -21,6 +21,10 @@ setuptools.setup(
     python_requires='>=3.6',
     setup_requires=['wheel'],
     install_requires=required,
+    extras_require={
+        ':python_version < "3.8"': ['snscrape >= 0.3.4'],
+        ':python_version >= "3.8"': ['snscrape @ git+https://github.com/JustAnotherArchivist/snscrape.git']
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
