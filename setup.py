@@ -2,11 +2,9 @@ from bsi_sentiment import __title__, __author__, __email__, __url__, __version__
 
 import setuptools
 
+
 with open("README.md") as f:
     long_description = f.read()
-
-with open("requirements.txt") as f:
-    required = f.readlines()[:-2]
 
 setuptools.setup(
     name=__title__,
@@ -20,11 +18,13 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires='>=3.6',
     setup_requires=['wheel'],
-    install_requires=required,
-    extras_require={
-        ':python_version < "3.8"': ['snscrape >= 0.3.4'],
-        ':python_version >= "3.8"': ['snscrape @ git+https://github.com/JustAnotherArchivist/snscrape.git']
-    },
+    install_requires=[
+        "nltk~=3.7",
+        "snscrape~=0.4.3.20220106",
+        "textblob~=0.17.1",
+        "tqdm~=4.62.3",
+        "tweepy~=4.9.0",
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -37,5 +37,5 @@ setuptools.setup(
         'console_scripts': [
             'sentiment=bsi_sentiment.bsi_sentiment:main'
         ]
-    }
+    },
 )
