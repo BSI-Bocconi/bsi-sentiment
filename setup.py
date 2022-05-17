@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url=__url__,
     packages=setuptools.find_packages(),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     setup_requires=['wheel'],
     install_requires=[
         "nltk~=3.7",
