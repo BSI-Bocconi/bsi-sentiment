@@ -70,7 +70,7 @@ class NLPTweet:
     def _from_sn(self, tweet):
         self.id = tweet.id
         self.permalink = tweet.url
-        self.username = tweet.username
+        self.username = tweet.user.username
         self.text = tweet.content
         self.date = datetime.datetime.strftime(
             tweet.date.astimezone(datetime.timezone.utc), '%Y-%m-%d')
