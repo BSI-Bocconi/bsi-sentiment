@@ -1,6 +1,5 @@
-nltk>=3.5
-textblob>=0.15.3
-tqdm>=4.54.0
-tweepy>=3.9.0
-snscrape >= 0.3.4; python_version < '3.9'
-snscrape @ git+https://github.com/JustAnotherArchivist/snscrape.git; python_version >= '3.9'
+nltk~=3.7
+snscrape~=0.4.3.20220106
+textblob~=0.17.1
+tqdm~=4.62.3
+tweepy~=4.9.0
